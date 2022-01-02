@@ -47,7 +47,7 @@ Factorize predictors and scale frequency
 
 ```{r amphkpie_02_05, echo=T, eval = T, message=TRUE, warning=TRUE}
 ice <- ice %>%
-  select(-Id, -Correction, -SpeechUnit, -SpeechUnitCount, -PreContext, -Token, -L1, 
+  dplyr::select(-Id, -Correction, -SpeechUnit, -SpeechUnitCount, -PreContext, -Token, -L1, 
          -PostContext, -PreContextLong, -Amplified, -Nationality, -OtherLanguages, -Birthplace) %>%
   dplyr::mutate(Emotionality = ifelse(Emotionality == "PositiveEmotional", "Positive",
                                ifelse(Emotionality == "NonEmotional", "Neutral", "Negative")),
@@ -61,7 +61,7 @@ ice <- ice %>%
                 Ethnicity = factor(Ethnicity),
                 SemanticCategory = factor(SemanticCategory),
                 Speaker = paste0(File, "$", Speaker)) %>%
-  select(-File, -WordCount)
+  dplyr::select(-File, -WordCount)
 str(ice)
 ```
 
@@ -82,12 +82,12 @@ Collapse infrequent adjectives and amplifiers
 
 ```{r amphkpie_02_11, echo=T, eval = T, message=TRUE, warning=TRUE}
 ice <- ice %>%
-  mutate(Adjective = ifelse(Adjective %in% fadj, Adjective, "other"),
+  dplyr::mutate(Adjective = ifelse(Adjective %in% fadj, Adjective, "other"),
          Variant = ifelse(Variant %in% famp, Variant, "other"),
          Adjective = factor(Adjective),
          Variant = factor(Variant)) %>%
-  group_by(Corpus) %>%
-  mutate(Frequency = scale(Frequency)[,1])
+  dplyr::group_by(Corpus) %>%
+  dplyr::mutate(Frequency = scale(Frequency)[,1])
 str(ice)
 ```
 
@@ -98,13 +98,13 @@ str(ice)
 ```{r}
 # process
 tb1a <- ice %>%
-  group_by(Corpus, Age, Gender) %>%
-  summarize(Adjectives = n(),
+  dplyr::group_by(Corpus, Age, Gender) %>%
+  dplyr::summarise(Adjectives = n(),
             VariantType = names(table(Variant)),
             VariantsN = table(Variant),
             VariantsP = round(VariantsN/Adjectives*100, 1),
             Percent = paste0(VariantsP, "% (N=", VariantsN, ")")) %>%
-  select(-VariantsN, -VariantsP) %>%
+  dplyr::select(-VariantsN, -VariantsP) %>%
   tidyr::spread(VariantType, Percent) %>%
   ungroup()
 # inspect data
@@ -113,16 +113,16 @@ tb1a
 
 ```{r}
 tb1b <- ice %>%
-  group_by(Corpus) %>%
-  summarize(Adjectives = n(),
+  dplyr::group_by(Corpus) %>%
+  dplyr::summarise(Adjectives = n(),
             VariantType = names(table(Variant)),
             VariantsN = table(Variant),
             VariantsP = round(VariantsN/Adjectives*100, 1),
             Percent = paste0(VariantsP, "% (N=", VariantsN, ")")) %>%
-  select(-VariantsN, -VariantsP) %>%
+  dplyr::select(-VariantsN, -VariantsP) %>%
   tidyr::spread(VariantType, Percent) %>%
   ungroup() %>%
-  mutate(Age = "Total",
+  dplyr::mutate(Age = "Total",
          Gender = "Total")
 # inspect data
 tb1b
@@ -145,17 +145,17 @@ Visualize Variant by Corpus and Age
 
 ```{r amphkpie_02_13, echo=T, eval = T, message=TRUE, warning=TRUE}
 ice %>%
-  mutate(Age = ifelse(Age == "16-25"|Age == "17-25"|Age == "18-25", 3, 
+  dplyr::mutate(Age = ifelse(Age == "16-25"|Age == "17-25"|Age == "18-25", 3, 
                ifelse(Age == "26-40"|Age == "26-41", 2, 
                ifelse(Age == "41+"|Age == "42+", 1, Age))),
          Corpus = ifelse(Corpus == "ICE-HK", "ICE Hong Kong",
                   ifelse(Corpus == "ICE-IND", "ICE India", "ICE Philippines"))) %>%
-  group_by(Corpus, Age, Variant) %>%
-  summarise(Frequency = n()) %>%
-  group_by(Corpus, Age) %>%
-  mutate(AllSlots = sum(Frequency),
+  dplyr::group_by(Corpus, Age, Variant) %>%
+  dplyr::summarise(Frequency = n()) %>%
+  dplyr::group_by(Corpus, Age) %>%
+  dplyr::mutate(AllSlots = sum(Frequency),
          Percent = round(Frequency/AllSlots*100, 1)) %>%
-  select(-Frequency, -AllSlots) %>%
+  dplyr::select(-Frequency, -AllSlots) %>%
   ggplot(aes(x = Age, y = Percent, 
              group = Variant, color = Variant, linetype = Variant)) +
   facet_grid(cols = vars(Corpus)) +
@@ -181,17 +181,17 @@ Visualize Variant by Corpus and Age and Function
 
 ```{r amphkpie_02_15, echo=T, eval = T, message=TRUE, warning=TRUE}
 ice %>%
-  mutate(Age = ifelse(Age == "16-25"|Age == "17-25"|Age == "18-25", 3, 
+  dplyr::mutate(Age = ifelse(Age == "16-25"|Age == "17-25"|Age == "18-25", 3, 
                ifelse(Age == "26-40"|Age == "26-41", 2, 
                ifelse(Age == "41+"|Age == "42+", 1, Age))),
          Corpus = ifelse(Corpus == "ICE-HK", "ICE Hong Kong",
                   ifelse(Corpus == "ICE-IND", "ICE India", "ICE Philippines"))) %>%
-  group_by(Corpus, Age, Variant, Function) %>%
-  summarise(Frequency = n()) %>%
-  group_by(Corpus, Age, Function) %>%
-  mutate(AllSlots = sum(Frequency),
+  dplyr::group_by(Corpus, Age, Variant, Function) %>%
+  dplyr::summarise(Frequency = n()) %>%
+  dplyr::group_by(Corpus, Age, Function) %>%
+  dplyr::mutate(AllSlots = sum(Frequency),
          Percent = round(Frequency/AllSlots*100, 1)) %>%
-  select(-Frequency, -AllSlots) %>%
+  dplyr::select(-Frequency, -AllSlots) %>%
   ggplot(aes(x = Age, y = Percent, 
              group = Variant, color = Variant, linetype = Variant)) +
   facet_grid(cols = vars(Corpus), rows=vars(Function)) +
@@ -216,11 +216,11 @@ ggsave(file = here("images", "VariantAgeCorpusFunction.png"),
 ```{r amphkpie_02_17, echo=T, eval = T, message=TRUE, warning=TRUE}
 ice <- ice %>%
   ungroup() %>%
-  select(-Speaker) %>%
-    mutate(Age = ifelse(Age == "16-25"|Age == "17-25"|Age == "18-25", "16-25", 
+  dplyr::select(-Speaker) %>%
+    dplyr::mutate(Age = ifelse(Age == "16-25"|Age == "17-25"|Age == "18-25", "16-25", 
                ifelse(Age == "26-40"|Age == "26-41", "26-41", 
                ifelse(Age == "41+"|Age == "42+", "42+", Age)))) %>%
-  mutate(Date = ifelse(Date == "1991"|Date == "1992", "Before1993", "After1998"),
+  dplyr::mutate(Date = ifelse(Date == "1991"|Date == "1992", "Before1993", "After1998"),
          Date = factor(Date, levels = c("Before1993", "After1998")),
          Age = factor(Age),
          Corpus = factor(Corpus),
@@ -228,7 +228,7 @@ ice <- ice %>%
          SemanticCategory = factor(SemanticCategory),
          Adjective = ifelse(Adjective == "different", "different", "other"),
          Adjective = factor(Adjective)) %>%
-  select(-EducationLevel) %>%
+  dplyr::select(-EducationLevel) %>%
   droplevels()
 # inspect
 head(ice)
@@ -324,8 +324,8 @@ ggsave(file = here("images", "CIT_combined_fill.png"),
 
 ```{r amphkpie_02_15, echo=T, eval = T, message=TRUE, warning=TRUE}
 phi <- ice %>%
-  filter(Corpus == "ICE-PHI") %>%
-  select(-Corpus)
+  dplyr::filter(Corpus == "ICE-PHI") %>%
+  dplyr::select(-Corpus)
 # set.seed (to store random numbers and thus make results reproducible)
 set.seed(2020083001) 
 # apply bonferroni correction (1 minus alpha multiplied by n of predictors)
@@ -379,8 +379,8 @@ ggsave(file = here("images", "CIT_PHI.png"),
 
 ```{r amphkpie_02_15, echo=T, eval = T, message=TRUE, warning=TRUE}
 ind <- ice %>%
-  filter(Corpus == "ICE-IND") %>%
-  select(-Corpus)
+  dplyr::filter(Corpus == "ICE-IND") %>%
+  dplyr::select(-Corpus)
 # set.seed (to store random numbers and thus make results reproducible)
 set.seed(2020083001) 
 # apply bonferroni correction (1 minus alpha multiplied by n of predictors)
@@ -425,8 +425,8 @@ ggparty(citd.ctree) +
       scale_y_continuous(breaks = seq(0, 1, .2)),
       xlab(""), 
       ylab("Probability")),
-    shared_axis_labels = TRUE) +
-  ggsave(file = here("images", "CIT_IND.png"),
+    shared_axis_labels = TRUE)
+ggsave(file = here("images", "CIT_IND.png"),
          height = 5,  width = 10, dpi = 320)
 ```
 
@@ -435,8 +435,8 @@ ggparty(citd.ctree) +
 
 ```{r amphkpie_02_15, echo=T, eval = T, message=TRUE, warning=TRUE}
 hk <- ice %>%
-  filter(Corpus == "ICE-HK") %>%
-  select(-Corpus)
+  dplyr::filter(Corpus == "ICE-HK") %>%
+  dplyr::select(-Corpus)
 # set.seed (to store random numbers and thus make results reproducible)
 set.seed(2020083001) 
 # apply bonferroni correction (1 minus alpha multiplied by n of predictors)
