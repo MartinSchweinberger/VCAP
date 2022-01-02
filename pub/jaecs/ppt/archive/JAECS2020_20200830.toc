@@ -1,9 +1,0 @@
-\select@language {english}
-\beamer@sectionintoc {1}{Introduction}{2}{0}{1}
-\beamer@sectionintoc {2}{Data and Methodology}{9}{0}{2}
-\beamer@subsectionintoc {2}{1}{Data}{10}{0}{2}
-\beamer@subsectionintoc {2}{2}{Data Processing}{12}{0}{2}
-\beamer@subsectionintoc {2}{3}{Variable Coding}{15}{0}{2}
-\beamer@subsectionintoc {2}{4}{Statistical analysis}{16}{0}{2}
-\beamer@sectionintoc {3}{Results}{19}{0}{3}
-\beamer@sectionintoc {4}{Discussion \& Outlook}{25}{0}{4}
