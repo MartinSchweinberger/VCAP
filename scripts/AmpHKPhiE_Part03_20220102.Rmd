@@ -1187,8 +1187,8 @@ ggplot(phi_so, aes(Emotionality, Probability)) +
         panel.grid.major = element_blank(), 
         panel.grid.minor = element_blank(), 
         axis.text.x = element_text(size=10)) +
-  labs(x = "Emotionality", y = "Predicted probability") +
-  ggsave("D:\\Uni\\Projekte\\02-Intensification\\AmpHKPIE\\images/Pred_Emotionality_phi_so.png",
+  labs(x = "Emotionality", y = "Predicted probability")
+ggsave(here::here("images", "Pred_Emotionality_phi_so.png"),
        height = 5,  width = 6, dpi = 320)
 ```
 
