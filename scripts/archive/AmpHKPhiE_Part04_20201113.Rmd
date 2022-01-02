@@ -1,0 +1,500 @@
+---
+title: "A corpus-based analysis of ongoing change in the adjective amplifier systems of Hong Kong, Philippine, and Indian English - Part 4"
+author: Martin Schweinberger
+date: "`r format(Sys.time(), '%Y-%m-%d')`"
+output: word_document
+---
+
+# Introduction{-}
+
+This document shows an analysis of adjective amplification in Hong Kong, Indian, and Philippine English based on the respective components of the International Corpus of English (ICE). 
+
+```{r, echo=FALSE}
+knitr::opts_chunk$set(error = TRUE)
+```
+
+## Preparation{-}
+
+In a first step, the session is prepared by clearing the work space, setting options, activating packages and functions, as well as loading relevant functions.
+
+```{r amphkpie_02_01, echo=T, eval = T, message=TRUE, warning=TRUE}
+# clean current workspace
+rm(list=ls(all=T))                                      
+# load packages
+library(tidyverse)
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+# set options
+options(stringsAsFactors = F)                           
+options(scipen = 999) 
+options(max.print=10000)
+# define image directory
+imageDirectory <- "images"   
+```
+
+## Load data{-}
+
+```{r amphkpie_02_03, echo=T, eval = T, message=TRUE, warning=TRUE}
+ice <- base::readRDS(file = here::here("data/editdata", "iceamp_04_clean.rda"))
+# inspect
+head(ice)
+```
+
+## Clean data
+
+Factorize predictors and scale frequency
+
+```{r amphkpie_02_05, echo=T, eval = T, message=TRUE, warning=TRUE}
+ice <- ice %>%
+  select(-Id, -Correction, -SpeechUnit, -SpeechUnitCount, -PreContext, -Token, -L1, 
+         -PostContext, -PreContextLong, -Amplified, -Nationality, -OtherLanguages, -Birthplace) %>%
+  dplyr::mutate(Emotionality = ifelse(Emotionality == "PositiveEmotional", "Positive",
+                               ifelse(Emotionality == "NonEmotional", "Neutral", "Negative")),
+                Emotionality = factor(Emotionality, levels = c("Negative", "Neutral", "Positive")),
+                Frequency = as.vector(scale(Frequency)),
+                Gender = factor(Gender),
+                EducationLevel = factor(EducationLevel),
+                Priming = factor(Priming),
+                Emotionality = factor(Emotionality),
+                Function = factor(Function),
+                Ethnicity = factor(Ethnicity),
+                SemanticCategory = factor(SemanticCategory),
+                Speaker = paste0(File, "$", Speaker)) %>%
+  select(-File, -WordCount)
+str(ice)
+```
+
+Determine adjective frequency
+
+```{r amphkpie_02_07, echo=T, eval = T, message=TRUE, warning=TRUE}
+fadj <- names(table(ice$Adjective))[which(table(ice$Adjective) > 50)]
+fadj
+```
+
+Determine variant frequency
+
+```{r amphkpie_02_09, echo=T, eval = T, message=TRUE, warning=TRUE}
+famp <- names(table(ice$Variant))[which(table(ice$Variant) > 50)]
+famp
+```
+Collapse infrequent adjectives and amplifiers
+
+```{r amphkpie_02_11, echo=T, eval = T, message=TRUE, warning=TRUE}
+ice <- ice %>%
+  mutate(Adjective = ifelse(Adjective %in% fadj, Adjective, "other"),
+         Variant = ifelse(Variant %in% famp, Variant, "other"),
+         Adjective = factor(Adjective),
+         Variant = factor(Variant)) %>%
+  group_by(Corpus) %>%
+  mutate(Frequency = scale(Frequency)[,1])
+str(ice)
+```
+
+## Data inspection{-}
+
+### Tables
+
+```{r}
+# process
+tb1a <- ice %>%
+  group_by(Corpus, Age, Gender) %>%
+  summarize(Adjectives = n(),
+            VariantType = names(table(Variant)),
+            VariantsN = table(Variant),
+            VariantsP = round(VariantsN/Adjectives*100, 1),
+            Percent = paste0(VariantsP, "% (N=", VariantsN, ")")) %>%
+  select(-VariantsN, -VariantsP) %>%
+  tidyr::spread(VariantType, Percent) %>%
+  ungroup()
+# inspect data
+tb1a
+```
+
+```{r}
+tb1b <- ice %>%
+  group_by(Corpus) %>%
+  summarize(Adjectives = n(),
+            VariantType = names(table(Variant)),
+            VariantsN = table(Variant),
+            VariantsP = round(VariantsN/Adjectives*100, 1),
+            Percent = paste0(VariantsP, "% (N=", VariantsN, ")")) %>%
+  select(-VariantsN, -VariantsP) %>%
+  tidyr::spread(VariantType, Percent) %>%
+  ungroup() %>%
+  mutate(Age = "Total",
+         Gender = "Total")
+# inspect data
+tb1b
+```
+
+```{r}
+# activate package
+library(here)
+tb1 <- add_row(tb1a, tb1b) %>%
+  arrange(Corpus)
+# save table
+write.table(tb1, here::here("tables", "tb1.txt"), sep = "\t", row.names = F)
+# inspect data
+tb1
+```
+
+### Viz
+
+Visualize Variant by Corpus and Age
+
+```{r amphkpie_02_13, echo=T, eval = T, message=TRUE, warning=TRUE}
+ice %>%
+  mutate(Age = ifelse(Age == "16-25"|Age == "17-25"|Age == "18-25", 3, 
+               ifelse(Age == "26-40"|Age == "26-41", 2, 
+               ifelse(Age == "41+"|Age == "42+", 1, Age))),
+         Corpus = ifelse(Corpus == "ICE-HK", "ICE Hong Kong",
+                  ifelse(Corpus == "ICE-IND", "ICE India", "ICE Philippines"))) %>%
+  group_by(Corpus, Age, Variant) %>%
+  summarise(Frequency = n()) %>%
+  group_by(Corpus, Age) %>%
+  mutate(AllSlots = sum(Frequency),
+         Percent = round(Frequency/AllSlots*100, 1)) %>%
+  select(-Frequency, -AllSlots) %>%
+  ggplot(aes(x = Age, y = Percent, 
+             group = Variant, color = Variant, linetype = Variant)) +
+  facet_grid(cols = vars(Corpus)) +
+  geom_line() + 
+  coord_cartesian(ylim = c(0, 100)) +
+  theme_set(theme_bw(base_size = 12)) +
+  theme(legend.position="top", 
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(), 
+        axis.text.x = element_text(size=10)) +
+  scale_color_manual(breaks = c("other", "really", "so", "very"),
+                     values = c("gray80", "gray60", "gray40", "gray20")) +
+  scale_linetype_manual(breaks = c("other", "really", "so", "very"),
+                        values = c(4, 3, 2, 1)) + 
+  scale_x_discrete(breaks = 1:3, 
+                   labels = c("41+", "26-41", "16-25")) 
+ggsave(file = here("images", "VariantAgeCorpus.png"),
+         height = 4,  width = 6, dpi = 320)
+  
+```
+
+Visualize Variant by Corpus and Age and Function
+
+```{r amphkpie_02_15, echo=T, eval = T, message=TRUE, warning=TRUE}
+ice %>%
+  mutate(Age = ifelse(Age == "16-25"|Age == "17-25"|Age == "18-25", 3, 
+               ifelse(Age == "26-40"|Age == "26-41", 2, 
+               ifelse(Age == "41+"|Age == "42+", 1, Age))),
+         Corpus = ifelse(Corpus == "ICE-HK", "ICE Hong Kong",
+                  ifelse(Corpus == "ICE-IND", "ICE India", "ICE Philippines"))) %>%
+  group_by(Corpus, Age, Variant, Function) %>%
+  summarise(Frequency = n()) %>%
+  group_by(Corpus, Age, Function) %>%
+  mutate(AllSlots = sum(Frequency),
+         Percent = round(Frequency/AllSlots*100, 1)) %>%
+  select(-Frequency, -AllSlots) %>%
+  ggplot(aes(x = Age, y = Percent, 
+             group = Variant, color = Variant, linetype = Variant)) +
+  facet_grid(cols = vars(Corpus), rows=vars(Function)) +
+  geom_line() + 
+  coord_cartesian(ylim = c(0, 100)) +
+  theme_set(theme_bw(base_size = 12)) +
+  theme(legend.position="top", 
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(), 
+        axis.text.x = element_text(size=10)) +
+  scale_color_manual(breaks = c("other", "really", "so", "very"),
+                     values = c("gray80", "gray60", "gray40", "gray20")) +
+  scale_linetype_manual(breaks = c("other", "really", "so", "very"),
+                        values = c(4, 3, 2, 1)) +  
+  scale_x_discrete(breaks = 1:3, 
+                   labels = c("41+", "26-41", "16-25")) 
+ggsave(file = here("images", "VariantAgeCorpusFunction.png"),
+         height = 4,  width = 6, dpi = 320)
+  
+```
+
+```{r amphkpie_02_17, echo=T, eval = T, message=TRUE, warning=TRUE}
+ice <- ice %>%
+  ungroup() %>%
+  select(-Speaker) %>%
+    mutate(Age = ifelse(Age == "16-25"|Age == "17-25"|Age == "18-25", "16-25", 
+               ifelse(Age == "26-40"|Age == "26-41", "26-41", 
+               ifelse(Age == "41+"|Age == "42+", "42+", Age)))) %>%
+  mutate(Date = ifelse(Date == "1991"|Date == "1992", "Before1993", "After1998"),
+         Date = factor(Date, levels = c("Before1993", "After1998")),
+         Age = factor(Age),
+         Corpus = factor(Corpus),
+         SemanticCategory = ifelse(SemanticCategory == "Value", "Value", "Other"),
+         SemanticCategory = factor(SemanticCategory),
+         Adjective = ifelse(Adjective == "different", "different", "other"),
+         Adjective = factor(Adjective)) %>%
+  select(-EducationLevel) %>%
+  droplevels()
+# inspect
+head(ice)
+```
+
+# Conditional Inference Tree Analysis{-}
+
+```{r amphkpie_02_15, echo=T, eval = T, message=TRUE, warning=TRUE}
+library(partykit)
+# set.seed (to store random numbers and thus make results reproducible)
+set.seed(2020083001) 
+# apply bonferroni correction (1 minus alpha multiplied by n of predictors)
+control = ctree_control(mincriterion = 1-(.05*(ncol(ice)-1)))
+# create initial conditional inference tree model
+citd.ctree <- ctree(Variant ~ Corpus + Adjective + Age + Gender + Function + Date + Emotionality + SemanticCategory +  Gradability, data = ice)
+# save plot
+png(here("images", "cit.png"),  width = 4800, height = 1000) 
+plot(citd.ctree, gp = gpar(fontsize = 18))
+dev.off()
+# show plot
+plot(citd.ctree, gp = gpar(fontsize = 8))
+```
+
+
+```{r}
+# activate package
+library(ggparty)
+# plotting
+ggparty(citd.ctree) +
+  geom_edge() +
+  geom_edge_label(size = 1.5) +
+  geom_node_label(line_list = list(aes(label = splitvar),
+                                   aes(label = paste("N = ", nodesize), 
+                                       size = 5)),
+                  line_gpar = list(list(size = 5), list(size = 5)), 
+                  ids = "inner") +
+  geom_node_label(aes(label = paste0("Node ", id, ", N = ", nodesize)),
+                  ids = "terminal", 
+                  nudge_y = 0.0, 
+                  nudge_x = 0.01, 
+                  size = 1.5) +
+  geom_node_plot(gglist = list(geom_bar(aes(x = "", fill = Variant),
+                                        position = position_dodge()),
+      theme_minimal(base_size = 5),
+      theme(panel.grid.major = element_blank(), 
+            panel.grid.minor = element_blank()),
+      scale_fill_manual(values = c("gray20", "gray40", "gray60", "gray80")),
+      scale_y_continuous(breaks = seq(0, 700, 100),
+                         limits = c(0, 700)),
+      xlab(""), 
+      ylab("Frequency of Variants")),
+    shared_axis_labels = TRUE)
+ggsave(file = here("images", "CIT_combined.png"),
+         height = 5,  width = 10, dpi = 320)
+```
+
+
+## ggparty
+
+```{r}
+# extract p-values
+pvals <- unlist(nodeapply(citd.ctree, ids = nodeids(citd.ctree), function(n) info_node(n)$p.value))
+pvals <- pvals[pvals <.05]
+# plotting
+ggparty(citd.ctree) +
+  geom_edge() +
+  geom_edge_label(size = 1.75) +
+  geom_node_label(line_list = list(aes(label = splitvar),
+                                   aes(label = paste0("N=", nodesize, ", p", ifelse(pvals < .001, "<.001", paste0("=", round(pvals, 3)))), 
+                                       size = 7)),
+                  line_gpar = list(list(size = 7), list(size = 7)), 
+                  ids = "inner") +
+  geom_node_label(aes(label = paste0("Node ", id, ", N=", nodesize)),
+                  ids = "terminal", 
+                  nudge_y = 0.01, 
+                  nudge_x = 0.01, 
+                  size = 1.75) +
+  geom_node_plot(gglist = list(geom_bar(aes(x = "", fill = Variant),
+                                        position = position_fill()),
+      theme_minimal(base_size = 7),
+      theme(panel.grid.major = element_blank(), 
+            panel.grid.minor = element_blank()),
+      scale_fill_manual(values = c("gray20", "gray40", "gray60", "gray80")),
+      scale_y_continuous(breaks = seq(0, 1, .2)),
+      xlab(""), 
+      ylab("Probability")),
+      shared_axis_labels = TRUE)
+ggsave(file = here("images", "CIT_combined_fill.png"),
+         height = 5,  width = 10, dpi = 320)
+```
+
+## ICE-PHI{-}
+
+```{r amphkpie_02_15, echo=T, eval = T, message=TRUE, warning=TRUE}
+phi <- ice %>%
+  filter(Corpus == "ICE-PHI") %>%
+  select(-Corpus)
+# set.seed (to store random numbers and thus make results reproducible)
+set.seed(2020083001) 
+# apply bonferroni correction (1 minus alpha multiplied by n of predictors)
+control = ctree_control(mincriterion = 1-(.05*(ncol(phi)-1)))
+# create initial conditional inference tree model
+citd.ctree <- ctree(Variant ~ Adjective + Age + Gender + Function + Date + Emotionality + SemanticCategory +  Gradability, data = phi)
+# save plot
+png(here("images", "citphi.png"),  width = 1800, height = 480) 
+plot(citd.ctree, gp = gpar(fontsize = 18))
+dev.off()
+# show plot
+plot(citd.ctree, gp = gpar(fontsize = 8))
+```
+
+
+## ggparty
+
+```{r}
+# extract p-values
+pvals <- unlist(nodeapply(citd.ctree, ids = nodeids(citd.ctree), function(n) info_node(n)$p.value))
+pvals <- pvals[pvals <.05]
+# plotting
+ggparty(citd.ctree) +
+  geom_edge() +
+  geom_edge_label(size = 3) +
+  geom_node_label(line_list = list(aes(label = splitvar),
+                                   aes(label = paste0("N=", nodesize, ", p", ifelse(pvals < .001, "<.001", paste0("=", round(pvals, 3)))), 
+                                       size = 12)),
+                  line_gpar = list(list(size = 12), list(size = 12)), 
+                  ids = "inner") +
+  geom_node_label(aes(label = paste0("Node ", id, ", N=", nodesize)),
+                  ids = "terminal", 
+                  nudge_y = 0.01, 
+                  nudge_x = 0.01, 
+                  size = 3) +
+  geom_node_plot(gglist = list(geom_bar(aes(x = "", fill = Variant),
+                                        position = position_fill()),
+      theme_minimal(base_size = 12),
+      theme(panel.grid.major = element_blank(), 
+            panel.grid.minor = element_blank()),
+      scale_fill_manual(values = c("gray20", "gray40", "gray60", "gray80")),
+      scale_y_continuous(breaks = seq(0, 1, .2)),
+      xlab(""), 
+      ylab("Probability")),
+    shared_axis_labels = TRUE)
+ggsave(file = here("images", "CIT_PHI.png"),
+         height = 5,  width = 10, dpi = 320)
+```
+
+## ICE-IND{-}
+
+```{r amphkpie_02_15, echo=T, eval = T, message=TRUE, warning=TRUE}
+ind <- ice %>%
+  filter(Corpus == "ICE-IND") %>%
+  select(-Corpus)
+# set.seed (to store random numbers and thus make results reproducible)
+set.seed(2020083001) 
+# apply bonferroni correction (1 minus alpha multiplied by n of predictors)
+control = ctree_control(mincriterion = 1-(.05*(ncol(phi)-1)))
+# create initial conditional inference tree model
+citd.ctree <- ctree(Variant ~ Adjective + Age + Gender + Function + Date + Emotionality + SemanticCategory +  Gradability, data = ind)
+# save plot
+png(here("images", "citind.png"),  width = 1800, height = 480) 
+plot(citd.ctree, gp = gpar(fontsize = 18))
+dev.off()
+# show plot
+plot(citd.ctree, gp = gpar(fontsize = 8))
+```
+
+
+## ggparty
+
+```{r}
+# extract p-values
+pvals <- unlist(nodeapply(citd.ctree, ids = nodeids(citd.ctree), function(n) info_node(n)$p.value))
+pvals <- pvals[pvals <.05]
+# plotting
+ggparty(citd.ctree) +
+  geom_edge() +
+  geom_edge_label(size = 3) +
+  geom_node_label(line_list = list(aes(label = splitvar),
+                                   aes(label = paste0("N=", nodesize, ", p", ifelse(pvals < .001, "<.001", paste0("=", round(pvals, 3)))), 
+                                       size = 12)),
+                  line_gpar = list(list(size = 12), list(size = 12)), 
+                  ids = "inner") +
+  geom_node_label(aes(label = paste0("Node ", id, ", N=", nodesize)),
+                  ids = "terminal", 
+                  nudge_y = 0.01, 
+                  nudge_x = 0.01, 
+                  size = 3) +
+  geom_node_plot(gglist = list(geom_bar(aes(x = "", fill = Variant),
+                                        position = position_fill()),
+      theme_minimal(base_size = 12),
+      theme(panel.grid.major = element_blank(), 
+            panel.grid.minor = element_blank()),
+      scale_fill_manual(values = c("gray20", "gray40", "gray60", "gray80")),
+      scale_y_continuous(breaks = seq(0, 1, .2)),
+      xlab(""), 
+      ylab("Probability")),
+    shared_axis_labels = TRUE) +
+  ggsave(file = here("images", "CIT_IND.png"),
+         height = 5,  width = 10, dpi = 320)
+```
+
+
+## ICE-HK{-}
+
+```{r amphkpie_02_15, echo=T, eval = T, message=TRUE, warning=TRUE}
+hk <- ice %>%
+  filter(Corpus == "ICE-HK") %>%
+  select(-Corpus)
+# set.seed (to store random numbers and thus make results reproducible)
+set.seed(2020083001) 
+# apply bonferroni correction (1 minus alpha multiplied by n of predictors)
+control = ctree_control(mincriterion = 1-(.05*(ncol(phi)-1)))
+# create initial conditional inference tree model
+citd.ctree <- ctree(Variant ~ Adjective + Age + Gender + Function + Date + Emotionality + SemanticCategory +  Gradability, data = hk)
+# save plot
+png(here("images", "cithk.png"),  width = 1800, height = 480) 
+plot(citd.ctree, gp = gpar(fontsize = 18))
+dev.off()
+# show plot
+plot(citd.ctree, gp = gpar(fontsize = 8))
+```
+
+## ggparty
+
+```{r}
+# plotting
+# extract p-values
+pvals <- unlist(nodeapply(citd.ctree, ids = nodeids(citd.ctree), function(n) info_node(n)$p.value))
+pvals <- pvals[pvals <.05]
+# plotting
+ggparty(citd.ctree) +
+  geom_edge() +
+  geom_edge_label(size = 3) +
+  geom_node_label(line_list = list(aes(label = splitvar),
+                                   aes(label = paste0("N=", nodesize, ", p", ifelse(pvals < .001, "<.001", paste0("=", round(pvals, 3)))), 
+                                       size = 12)),
+                  line_gpar = list(list(size = 12), list(size = 12)), 
+                  ids = "inner") +
+  geom_node_label(aes(label = paste0("Node ", id, ", N=", nodesize)),
+                  ids = "terminal", 
+                  nudge_y = 0.01, 
+                  nudge_x = 0.01, 
+                  size = 3) +
+  geom_node_plot(gglist = list(geom_bar(aes(x = "", fill = Variant),
+                                        position = position_fill()),
+      theme_minimal(base_size = 12),
+      theme(panel.grid.major = element_blank(), 
+            panel.grid.minor = element_blank()),
+      scale_fill_manual(values = c("gray20", "gray40", "gray60", "gray80")),
+      scale_y_continuous(breaks = seq(0, 1, .2)),
+      xlab(""), 
+      ylab("Probability")),
+    shared_axis_labels = TRUE)
+ggsave(file = here("images", "CIT_HK.png"),
+         height = 5,  width = 10, dpi = 320)
+```
+
+# Outro
+
+```{r}
+sessionInfo()
+```
+
+***
+
+THE END
+
+***
+

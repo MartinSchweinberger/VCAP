@@ -15,6 +15,19 @@ This document shows an analysis of adjective amplification in Irish English base
 
 # Preparation{-}
 
+Package installation
+
+```{r install, eval = F, message = F, warning = F}
+install.packages("tidyverse")
+install.packages("quanteda")
+install.packages("syuzhet")
+install.packages("NLP")
+install.packages("openNLP")
+install.packages("qdap")
+install.packages("here")
+```
+
+
 In a first step, the session is prepared by clearing the work space, setting options, activating packages and functions, as well as loading relevant functions.
 
 ```{r amphkpie_01_01, echo=T, eval = T, message=FALSE, warning=FALSE}
