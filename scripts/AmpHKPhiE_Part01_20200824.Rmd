@@ -1,0 +1,988 @@
+---
+title: "A corpus-based analysis of ongoing change in the adjective amplifier systems of Hong Kong, Philippine, and Indian English"
+author: Martin Schweinberger
+date: "`r format(Sys.time(), '%Y-%m-%d')`"
+output: 
+  word_document:
+    fig_caption: yes
+    pandoc_args: --smart
+bibliography: D:\\BibTex/Bibliography.bib
+---
+
+# Introduction{-}
+
+This document shows an analysis of adjective amplification in Irish English based on the Irish component of the International Corpus of English (ICE).  
+
+# Preparation{-}
+
+In a first step, the session is prepared by clearing the work space, setting options, activating packages and functions, as well as loading relevant functions.
+
+```{r amphkpie_01_01, echo=T, eval = T, message=FALSE, warning=FALSE}
+# load packages
+library(dplyr)  
+library(stringr)
+library(quanteda)
+library(syuzhet)
+library(NLP)
+library(openNLP)
+library(qdap)
+library(here)
+# load function (for pos-tagging objects in R)
+source("D:\\R/POStagObject.R")
+# set options
+options(stringsAsFactors = F)                           
+options(scipen = 999) 
+options(max.print=10000)
+# specify path to corpra
+hkpath <- "D:\\Uni\\Korpora\\Original\\ICE Hong Kong"
+phipath <- "D:\\Uni\\Korpora\\Original\\ICE Philippines\\Corpus"
+indpath <- "D:\\Uni\\Korpora\\Original\\ICE India\\Corpus"
+biohkpath <- "D:\\Uni\\Korpora\\Metadata/BiodataIceHongKong_new.txt"
+biophipath <- "D:\\Uni\\Korpora\\Metadata/BiodataIcePhilippines.txt"
+bioindpath <- "D:\\Uni\\Korpora\\Metadata/BiodataIceIndia.txt"
+```
+
+# Data Processing{-}
+
+Define files
+
+```{r amphkpie_01_03, echo=T, eval = T, message=FALSE, warning=FALSE}
+icehk_files <- list.files(hkpath, pattern = "[S|s]1[A|a].*.txt", full.names = T)
+icephi_files <- list.files(phipath, pattern = "S1A.*.TXT", full.names = T)
+iceind_files <- list.files(indpath, pattern = "[S|s]1[A|a].*.txt", full.names = T)
+```
+
+## Load data{-}
+
+HK
+
+```{r amphkpie_01_05, echo=T, eval = T, message=FALSE, warning=FALSE}
+icehk <- sapply(icehk_files, function(x){
+  x <- scan(x, what = "char", sep = "", quote = "", quiet = T, skipNul = T)
+  x <- paste(x, sep = " ", collapse = " ")
+  x <- str_squish(x)
+})
+# inspect
+str(icehk)
+```
+
+PHI
+
+```{r amphkpie_01_07, echo=T, eval = T, message=FALSE, warning=FALSE}
+icephi <- sapply(icephi_files, function(x){
+  x <- scan(x, what = "char", sep = "", quote = "", quiet = T, skipNul = T)
+  x <- paste(x, sep = " ", collapse = " ")
+  x <- str_squish(x)
+})
+# inspect
+str(icephi)
+```
+
+IND
+
+```{r amphkpie_01_09, echo=T, eval = T, message=FALSE, warning=FALSE}
+iceind <- sapply(iceind_files, function(x){
+  x <- scan(x, what = "char", sep = "", quote = "", quiet = T, skipNul = T)
+  x <- paste(x, sep = " ", collapse = " ")
+  x <- str_squish(x)
+})
+# inspect
+str(iceind)
+```
+
+## Tabulate data{-}
+
+HK
+
+```{r amphkpie_01_11, echo=T, eval = T, message=FALSE, warning=FALSE}
+icehk_df <- unlist(stringr::str_split(stringr::str_replace_all(icehk,
+                                                               "<ICE-HK:[S|s]1[A|a]-",
+                                                               "~~~<ICE-HK:S1A-"),
+                                      "~~~"))
+# create df 
+icehk_df <- tibble(1:length(icehk_df),
+                  rep("ICE-HK", length(icehk_df)),
+                  str_remove_all(icehk_df, "#.*"),
+                  str_remove_all(icehk_df, ">.*"), 
+                  icehk_df)
+# add column names
+icehk_df <- icehk_df %>%
+  rename(Id = colnames(icehk_df)[1],
+         Corpus = colnames(icehk_df)[2],
+         File = colnames(icehk_df)[3],
+         Speaker = colnames(icehk_df)[4],
+         SpeechUnit = colnames(icehk_df)[5]) %>%
+  mutate(File = str_remove_all(File, ".*:"),
+         Speaker = str_remove_all(Speaker, ".*#"),
+         ExtraCorpusSpeaker = ifelse(str_detect(Speaker, "^X") == T, 1, 0),
+         Speaker = str_remove_all(Speaker, ".*:"),
+         SpeechUnit = str_remove(SpeechUnit, ".*? "),
+         CleanSpeechUnit = str_remove_all(SpeechUnit, "<[:alnum:]{1,}>.*?</[:alnum:]{1,}>"),
+         CleanSpeechUnit = str_remove_all(CleanSpeechUnit, "<&>.*?</&>"),
+         CleanSpeechUnit = str_remove_all(SpeechUnit, "<.*?>"),
+         CleanSpeechUnit = str_remove_all(CleanSpeechUnit, "[^[:alnum:]=\\'\\.\\-\\? ]"),
+         CleanSpeechUnit = str_squish(CleanSpeechUnit)) %>%
+  filter(ExtraCorpusSpeaker == 0,
+         CleanSpeechUnit != "",
+         Speaker  != "") %>%
+  select(-ExtraCorpusSpeaker)
+# inspect
+str(icehk_df)
+```
+
+Extract speech units and word counts: HK
+
+```{r amphkpie_01_13, echo=T, eval = T, message=FALSE, warning=FALSE}
+WordCount_HK <- icehk_df %>%
+  mutate(WordCount = str_count(CleanSpeechUnit, " ") +1) %>%
+  group_by(File, Speaker) %>%
+  summarise(SpeechUnitCount = n(),
+            WordCount = sum(WordCount))
+# inspect
+head(WordCount_HK)
+```
+
+PHI
+
+```{r amphkpie_01_15, echo=T, eval = T, message=FALSE, warning=FALSE}
+icephi_df <- unlist(stringr::str_split(stringr::str_replace_all(icephi, "<ICE-PHI:[S|s]1[A|a]-",
+                                                                "~~~<ICE-PHI:S1A-"), "~~~"))
+# create df 
+icephi_df <- tibble(1:length(icephi_df),
+                  rep("ICE-PHI", length(icephi_df)),
+                  str_remove_all(icephi_df, "#.*"),
+                  str_remove_all(icephi_df, ">.*"), 
+                  icephi_df)
+# add column names
+icephi_df <- icephi_df %>%
+  rename(Id = colnames(icephi_df)[1],
+         Corpus = colnames(icephi_df)[2],
+         File = colnames(icephi_df)[3],
+         Speaker = colnames(icephi_df)[4],
+         SpeechUnit = colnames(icephi_df)[5]) %>%
+  mutate(File = str_remove_all(File, ".*:"),
+         Speaker = str_remove_all(Speaker, ".*#"),
+         ExtraCorpusSpeaker = ifelse(str_detect(Speaker, "^X") == T, 1, 0),
+         Speaker = str_remove_all(Speaker, ".*:"),
+         SpeechUnit = str_remove(SpeechUnit, ".*? "),
+         CleanSpeechUnit = str_remove_all(SpeechUnit, "<[:alnum:]{1,}>.*?</[:alnum:]{1,}>"),
+         CleanSpeechUnit = str_remove_all(CleanSpeechUnit, "<&>.*?</&>"),
+         CleanSpeechUnit = str_remove_all(SpeechUnit, "<.*?>"),
+         CleanSpeechUnit = str_remove_all(CleanSpeechUnit, "[^[:alnum:]=\\'\\.\\-\\? ]"),
+         CleanSpeechUnit = str_squish(CleanSpeechUnit)) %>%
+  filter(ExtraCorpusSpeaker == 0,
+         CleanSpeechUnit != "") %>%
+  select(-ExtraCorpusSpeaker)
+# inspect
+str(icephi_df)
+```
+
+IND
+
+```{r amphkpie_01_17, echo=T, eval = T, message=FALSE, warning=FALSE}
+iceind_df <- unlist(stringr::str_split(stringr::str_replace_all(iceind, "<ICE-IND:[S|s]1[A|a]-",
+                                                                "~~~<ICE-IND:S1A-"), "~~~"))
+# create df 
+iceind_df <- tibble(1:length(iceind_df),
+                  rep("ICE-IND", length(iceind_df)),
+                  str_remove_all(iceind_df, "#.*"),
+                  str_remove_all(iceind_df, ">.*"), 
+                  iceind_df)
+# add column names
+iceind_df <- iceind_df %>%
+  rename(Id = colnames(iceind_df)[1],
+         Corpus = colnames(iceind_df)[2],
+         File = colnames(iceind_df)[3],
+         Speaker = colnames(iceind_df)[4],
+         SpeechUnit = colnames(iceind_df)[5]) %>%
+  mutate(File = str_remove_all(File, ".*:"),
+         Speaker = str_remove_all(Speaker, ".*#"),
+         ExtraCorpusSpeaker = ifelse(str_detect(Speaker, "^X") == T, 1, 0),
+         Speaker = str_remove_all(Speaker, ".*:"),
+         SpeechUnit = str_remove(SpeechUnit, ".*? "),
+         CleanSpeechUnit = str_remove_all(SpeechUnit, "<[:alnum:]{1,}>.*?</[:alnum:]{1,}>"),
+         CleanSpeechUnit = str_remove_all(CleanSpeechUnit, "<&>.*?</&>"),
+         CleanSpeechUnit = str_remove_all(SpeechUnit, "<.*?>"),
+         CleanSpeechUnit = str_remove_all(CleanSpeechUnit, "[^[:alnum:]=\\'\\.\\-\\? ]"),
+         CleanSpeechUnit = str_squish(CleanSpeechUnit)) %>%
+  filter(ExtraCorpusSpeaker == 0,
+         CleanSpeechUnit != "") %>%
+  select(-ExtraCorpusSpeaker)
+# inspect
+str(iceind_df)
+```
+
+## Load biodata{-}
+
+```{r amphkpie_01_19, echo=T, eval = T, message=FALSE, warning=FALSE}
+biohk <- read.delim(biohkpath, sep = "\t", header = T, quote = "\"", comment.char = "") %>%
+  rename(File = Textcode,
+         Speaker = Speaker.ID)
+biophi <- read.delim(biophipath, sep = "\t", header = T, quote = "\"", comment.char = "") %>%
+  rename(File = text.id,
+         Speaker = spk.ref)
+bioind <- read.delim(bioindpath, sep = "\t", header = T, quote = "\"", comment.char = "") %>%
+  rename(File = text.id,
+         Speaker = spk.ref)
+#inspect
+colnames(biohk); colnames(biophi); colnames(bioind)
+```
+
+## Join data and biodata{-}
+
+```{r amphkpie_01_21, echo=T, eval = T, message=FALSE, warning=FALSE}
+icehk_info <- left_join(icehk_df, WordCount_HK, by = c("File", "Speaker"))
+icehk_info <- left_join(icehk_info, biohk, by = c("File", "Speaker"))
+icephi_info <- left_join(icephi_df, biophi, by = c("File", "Speaker"))
+iceind_info <- left_join(iceind_df, bioind, by = c("File", "Speaker"))
+```
+
+Remove superfluous columns
+
+```{r amphkpie_01_23, echo=T, eval = T, message=FALSE, warning=FALSE}
+icehk_info <- icehk_info %>%
+  select(-Old.File, -Text.Category, -Subtext, -Description.of.Contents, -Last.Name,
+         -First.Name, -Chinese.Name, -Primary.Education, -Secondary.Education, 
+         -Tertiary.Education, -Professional.Training, -Overseas.Experience, -Affiliations, 
+         -Employer, -Recording.Place) %>%
+  rename(Date = Recording.Date,
+         Ethnicity = Ethnic.Group,
+         L1 = Mother.Tongue,
+         OtherLanguages = Other.Languages,
+         EducationLevel = Educational.Level) %>%
+  mutate(Date = str_remove_all(Date, ".*-"),
+         Gender = ifelse(Gender == "f", "female", 
+                  ifelse(Gender == "m", "male", Gender)))
+icephi_info <- icephi_info %>%
+  select(-id, -orig.id, -file.speaker.id, -subfile.id, -your.id, -text.category,
+         -organizing.body, -first.name, -last.name, -copyright.statement, -recording.place) %>%
+  rename(Date = recording.date,
+         Gender = gender,
+         Age = age,
+         Nationality = nationality,
+         L1 = mother.tongue,
+         Occupation = occupation,
+         EducationLevel = educational.level,
+         SpeechUnitCount = speech.unit.count,
+         WordCount = word.count) %>%
+  mutate(Date = str_remove_all(Date, ".*-"),
+         Date = str_remove_all(Date, "[:alpha:]"),
+         Date = str_squish(Date))
+iceind_info <- iceind_info %>%
+  select(-id, -file.speaker.id, -subfile.id, -place.of.recording, -text.category, -file.wordcount,
+         -communicative.situation, -organising.body, -copyright.statement, -communicative.role,
+         -surname, -forenames, -affiliations, -free.comments, -birthplace, -audience.size,
+         -no.of.participants, -relationship.of.participants) %>%
+  rename(Date = date.of.recording,
+         Age = age,
+         Gender = gender,
+         Nationality = nationality,
+         EducationLevel = education,
+         Occupation = occupation,
+         L1 = mother.tongue,
+         OtherLanguages = other.languages,
+         SpeechUnitCount = speech.unit.count,
+         WordCount = word.count)
+# inspect
+head(icehk_info, 3)
+```
+
+## Create single table{-}
+ 
+```{r amphkpie_01_25, echo=T, eval = T, message=FALSE, warning=FALSE}
+ice <- merge(icehk_info, icephi_info, all = TRUE)
+ice <- merge(ice, iceind_info, all = TRUE)
+ice <- ice %>%
+  arrange(Corpus, File, Id) %>%
+  mutate(Date = str_remove_all(Date, ".* "),
+         Date = ifelse(nchar(Date) == 2 & str_detect(Date, "^0"), 
+                       paste("20", Date, sep = ""),
+                ifelse(nchar(Date) == 2 & str_detect(Date, "^9"), 
+                       paste("19", Date, sep = ""),
+                       Date)),
+         Date = str_replace_all(Date, "1993/94", "1993"),
+         Age = ifelse(Age == "60 or above", "60+", Age))
+# save data
+base::saveRDS(ice, file = here::here("data/rawdata", "ice.rda"))
+# inspect
+head(ice)
+```
+
+## Recode bioinfo
+
+### Recode Age
+
+```{r amphkpie_02_01, echo=T, eval = T, message=FALSE, warning=FALSE}
+ice <- ice %>%
+  filter(Age != "14-16",
+         Age != "") %>%
+  mutate(Age = ifelse(Corpus == "ICE-HK" & Age == "41-45", "41+",
+               ifelse(Corpus == "ICE-HK" & Age == "46-50", "41+",
+               ifelse(Corpus == "ICE-HK" & Age == "60+", "41+",
+               ifelse(Corpus == "ICE-HK" & Age == "51-55", "41+",       
+               ifelse(Corpus == "ICE-HK" & Age == "17-20", "17-25",
+               ifelse(Corpus == "ICE-HK" & Age == "21-25", "17-25",
+               ifelse(Corpus == "ICE-HK" & Age == "26-30", "26-40",       
+               ifelse(Corpus == "ICE-HK" & Age == "31-35", "26-40",       
+               ifelse(Corpus == "ICE-HK" & Age == "36-40", "26-40",
+               ifelse(Corpus == "ICE-IND" & Age == "26-33", "26-41",
+               ifelse(Corpus == "ICE-IND" & Age == "34-41", "26-41",
+               ifelse(Corpus == "ICE-IND" & Age == "42-49", "42+",       
+               ifelse(Corpus == "ICE-IND" & Age == "50+", "42+",
+               ifelse(Corpus == "ICE-PHI" & Age == "16-20", "16-25",
+               ifelse(Corpus == "ICE-PHI" & Age == "21-25", "16-25",
+               ifelse(Corpus == "ICE-PHI" & Age == "41-45", "41+",       
+               ifelse(Corpus == "ICE-PHI" & Age == "46-50", "41+",       
+               ifelse(Corpus == "ICE-PHI" & Age == "50+", "41+", 
+               ifelse(Corpus == "ICE-PHI" & Age == "26-30", "26-40",       
+               ifelse(Corpus == "ICE-PHI" & Age == "31-35", "26-40",
+               ifelse(Corpus == "ICE-PHI" & Age == "36-40", "26-40",       
+                      Age))))))))))))))))))))))
+# inspect
+ftable(ice$Age,ice$Corpus)
+```
+### Recode Nationality
+
+```{r amphkpie_02_01, echo=T, eval = T, message=FALSE, warning=FALSE}
+ice <- ice %>%
+  mutate(Nationality = str_to_title(Nationality),
+         Nationality = str_remove_all(Nationality, " .*"),
+         Nationality = ifelse(Corpus == "ICE-HK" & Nationality != "Chinese", "Other",
+                       ifelse(Corpus == "ICE-PHI" & Nationality != "Filipino", "Other",
+                              Nationality)))
+# inspect
+ftable(ice$Nationality,ice$Corpus)
+```
+### Recode L1
+
+```{r amphkpie_02_01, echo=T, eval = T, message=FALSE, warning=FALSE}
+ice <- ice %>%
+  mutate(L1 = str_to_title(L1),
+         L1 = str_remove_all(L1, " .*"),
+         L1 = str_remove_all(L1, "/.*"),
+         L1 = ifelse(Corpus == "ICE-HK" & L1 != "Cantonese", "Other", 
+              ifelse(Corpus == "ICE-PHI" & L1 != "Tagalog", "Other",
+              ifelse(Corpus == "ICE-IND" & L1 != "Marathi", "Other", L1))))
+# inspect
+ftable(ice$L1,ice$Corpus)
+```
+
+### Remove Occupation (all ACMP!)
+
+```{r amphkpie_02_01, echo=T, eval = T, message=FALSE, warning=FALSE}
+head(ice)
+ice <- ice %>%
+  select(-Occupation)
+```
+
+### Recode EducationLevel
+
+```{r amphkpie_02_01, echo=T, eval = T, message=FALSE, warning=FALSE}
+#head(ice)
+ice <- ice %>%
+  mutate(EducationLevel = tolower(EducationLevel),
+         EducationLevel = ifelse(str_detect(EducationLevel, "uni"), "College",
+                          ifelse(str_detect(EducationLevel, "college"), "College", 
+                                 EducationLevel)),
+         EducationLevel = ifelse(Corpus == "ICE-HK" & EducationLevel == "", NA,
+                          ifelse(Corpus == "ICE-HK" & EducationLevel != "College",
+                                 "NoCollege", 
+                          ifelse(Corpus == "ICE-IND" & EducationLevel != "College",
+                                 "Other", 
+                          ifelse(Corpus == "ICE-PHI" & is.na(EducationLevel) == F,
+                                 "College", EducationLevel)))))
+# inspect
+ftable(ice$EducationLevel,ice$Corpus)
+```
+### Recode OtherLanguages
+
+```{r amphkpie_02_01, echo=T, eval = T, message=FALSE, warning=FALSE}
+ice <- ice %>%
+  mutate(OtherLanguages = str_to_title(OtherLanguages),
+         OtherLanguages = str_remove_all(OtherLanguages, ", .*"),
+         OtherLanguages = ifelse(Corpus == "ICE-HK" & OtherLanguages != "English",
+                                 "Other",
+                          ifelse(Corpus == "ICE-IND" & OtherLanguages != "Hindi",
+                                 "Other", OtherLanguages)))
+# inspect
+ftable(ice$OtherLanguages,ice$Corpus)
+```
+
+### Recode Birthplace
+
+```{r amphkpie_02_01, echo=T, eval = T, message=FALSE, warning=FALSE}
+ice <- ice %>%
+  mutate(Birthplace = str_to_title(Birthplace),
+         Birthplace = ifelse(Corpus == "ICE-HK" & Birthplace != "Hong Kong",
+                                 "Other", Birthplace))
+# inspect
+ftable(ice$Birthplace,ice$Corpus)
+```
+
+### Recode Ethnicity
+
+```{r amphkpie_02_01, echo=T, eval = T, message=FALSE, warning=FALSE}
+ice <- ice %>%
+  mutate(Ethnicity = str_to_title(Ethnicity),
+         Ethnicity = ifelse(Corpus == "ICE-HK" & Ethnicity != "Chinese",
+                                 "Other", Ethnicity))
+# inspect
+ftable(ice$Ethnicity,ice$Corpus)
+```
+
+## PoS tagging{-}
+
+```{r amphkpie_01_27, echo=T, eval = T, message=FALSE, warning=FALSE}
+# pos tagging data
+icepos <- POStag(object = ice$CleanSpeechUnit)
+icepos <- as.vector(unlist(icepos))
+writeLines(icepos, con = here::here("data/editdata", "icepos.txt"), sep = "\n", useBytes = FALSE)
+ice$Tagged <- scan(here::here("data/editdata", "icepos.txt"), what = "char", sep = "\n", quote = "", quiet = T, skipNul = T)
+# inspect
+head(ice)
+```
+
+# Concordancing{-} 
+
+```{r amphkpie_01_29, echo=T, eval = T, message=FALSE, warning=FALSE}
+concjj <- as.data.frame(kwic(ice$Tagged, 
+                             pattern = 
+                               phrase("[:alnum:]{1,} / JJ[:alnum:]{0,}\\${0,1}"),
+                             valuetype = "regex",
+                             window = 15,
+                             case_insensitive = F,
+                             preserve_tags = TRUE
+                             ))
+# clean concjj
+concjj <- concjj %>%
+  mutate(pre = str_replace_all(pre, " / ", "/"),
+         keyword = str_replace_all(keyword, " / ", "/"),
+         post = str_replace_all(post, " / ", "/")) %>%
+  mutate(pre = str_replace_all(pre, "/ ", "/"),
+         keyword = str_replace_all(keyword, "/ ", "/"),
+         post = str_replace_all(post, "/ ", "/")) %>%
+  mutate(pre = str_replace_all(pre, " \\$", "$"),
+         keyword = str_replace_all(keyword, " \\$", "$"),
+         post = str_replace_all(post, " \\$", "$"))
+# inspect
+head(concjj)
+```
+
+Count adjectives in speech units
+
+```{r amphkpie_01_31, echo=T, eval = T, message=FALSE, warning=FALSE}
+# not repeated
+rp0 <- str_count(ice$Tagged, "[:alnum:]/JJ[:alnum:]{0,}\\${0,}")
+# repeated without 0
+rp1 <- ifelse(rp0 == 0, 1, rp0)
+# repeated with 0
+rp2 <- rep(rp0, rp1)
+```
+
+
+```{r amphkpie_01_33, echo=T, eval = T, message=FALSE, warning=FALSE}
+iceadj <- ice[rep(seq(nrow(ice)), rp1),]
+# add number of adjs
+iceadj <- data.frame(iceadj, rp2)
+# remove speech units without adj
+iceadj <- iceadj %>%
+  filter(rp2 != 0)
+# combine data sets
+iceadj <- data.frame(iceadj, concjj) %>%
+  select(-rp2, -docname, -from, -to, -pattern) %>%
+  rename(Token = keyword,
+         PreContext = pre,
+         PostContext = post)
+# remove rows without Tokens
+iceamp <- iceadj %>% 
+  filter(is.na(Token) == F) %>%
+  mutate(Adjective = tolower(str_remove_all(Token, "/JJ")),
+         Variant = tolower(str_remove_all(str_squish(PreContext), ".* ")),
+         Id = 1:length(Variant)) %>%
+  mutate(Variant = str_remove_all(Variant, "/.*")) %>%
+  select(-CleanSpeechUnit, -Tagged)
+# inspect data
+head(iceamp)
+```
+
+
+# Annotation and cleaning{-}
+
+```{r amphkpie_01_35, echo=T, eval = T, message=FALSE, warning=FALSE}
+iceamp <- iceamp %>%
+  mutate(Function = str_squish(PostContext)) %>%
+  mutate(Function = tolower(Function)) %>%
+  mutate(Function = gsub("/jj[a-z]{0,2} ", "qwertz", Function)) %>%
+  mutate(Function = gsub("/rb[a-z]{0,2} ", "qwertz", Function)) %>%
+  mutate(Function = gsub(" .*", "", Function)) %>%
+  mutate(Function = gsub("qwertz", " ", Function)) %>%
+  mutate(Function = gsub(".*/nn.*", "Attributive", Function)) %>%
+  mutate(Function = ifelse(Function == "Attributive", "Attributive", "Predicative"))
+# inspect data
+head(iceamp)
+```
+
+## Define amplifiers{-}
+
+```{r amphkpie_01_37, echo=T, eval = T, message=FALSE, warning=FALSE}
+amplifiers <- c("absolutely", "actually", "aggressively", 
+                "amazingly", "appallingly", "awfully", 
+                "badly", "bloody", "certainly", "clearly",
+                "dead", "completely", "considerably", 
+                "crazy", "decidedly", "definitely",  "distinctly", 
+                "dreadfully", "enormously", "entirely", "especially", 
+                "exactly", "exceedingly", "exceptionally", 
+                "excruciatingly", "extraordinarily", "extremely",
+                "fiercely", "firmly", "frightfully", "fucking", 
+                "fully", "genuinely", "greatly",
+                "grossly", "heavily", "highly", "hopelessly", 
+                "horrendously", "hugely",
+                "immediately", "immensely", "incredibly", 
+                "infinitely", "intensely", "irrevocably",
+                "mad", "mega", "mighty", "most", "much", 
+                "obviously", "openly", "overwhelmingly", "particularly", 
+                "perfectly", "plenty", "positively", 
+                "pretty", "profoundly", "purely", "real", "really", 
+                "remarkably", "seriously", 
+                "shocking",   "significantly", "so", 
+                "specially", "specifically", "strikingly",
+                "strongly", "substantially", "super", "surely", 
+                "terribly", "terrifically", 
+                "total", "totally", "traditionally", "true", 
+                "truly", "ultra", "utterly", "very",
+                "viciously", "wholly", "wicked", "wildly")
+```
+
+Clean data
+
+```{r amphkpie_01_39, echo=T, eval = T, message=FALSE, warning=FALSE}
+# register
+iceamp <- iceamp %>%
+# shorten post Context
+  mutate(PostContext = substr(PostContext, 1, 
+                              ifelse((nchar(PostContext)+25) < 25,
+                                     max(nchar(PostContext)), 25))) %>%
+  # pre Context
+  mutate(PreContext = str_squish(PreContext)) %>%
+  mutate(PreContextLong  = substr(iceamp$PreContext,
+                                  ifelse(nchar(PreContext)-25 <=0, 1, 
+                                                              nchar(PreContext)-25),
+                                  nchar(PreContext))) %>%
+  mutate(PreContext = str_remove_all(PreContext, ".* "),
+         Variant = ifelse(Variant %in% amplifiers, Variant, 0),
+         Amplified = ifelse(Variant == 0, 0, 1)) %>%
+  group_by(Corpus, Adjective, Age) %>%
+  mutate(AdjFrequency = n()) %>%
+  ungroup() %>%
+  group_by(Corpus, Age) %>%
+  mutate(AllAdjs = n()) %>%
+  mutate(Frequency = round(AdjFrequency/AllAdjs*100, 2),
+         Postag = str_remove_all(Token, ".*/")) %>%
+  filter(Postag == "JJ",
+         Amplified != 0) %>%
+  select(-AllAdjs, -AdjFrequency, -Postag)
+# inspect
+head(iceamp)
+```
+
+## Check adjectives{-}
+
+```{r amphkpie_01_41, echo=T, eval = T, message=FALSE, warning=FALSE}
+misspelled <- as.vector(unlist(sapply(iceamp$Adjective, function(x){
+  x <- which_misspelled(x, suggest=FALSE)
+})))
+problematic_items <- names(table(misspelled))
+# inspect
+head(problematic_items)
+```
+
+Remove errors
+
+```{r amphkpie_01_43, echo=T, eval = T, message=FALSE, warning=FALSE}
+# define forms that require removal
+nonpropadj <- c("afs", "ako", "bagay", "comfor", "danke", "embarassing",
+                "eto", "extremeawesome", "faluting", "ganon", "gipit", "gwai",
+                "inspite", "kamal", "luc", "mahal", "malambing", "ngh", "poch",
+                "sarcastical", "tagal", "tamad", "terrib", "uhm", "uhn", "umesh",
+                "yaar")
+iceamp <- iceamp %>%
+  filter(!Adjective %in% nonpropadj)
+# extract adjectives for further inspection
+adjectives <- names(table(iceamp$Adjective))
+# inspect
+head(adjectives)
+```
+## Correct spelling{-}
+
+```{r amphkpie_01_45, echo=T, eval = T, message=FALSE, warning=FALSE}
+iceamp$Correction <- as.vector(unlist(sapply(iceamp$Adjective, function(x){
+  x <- which_misspelled(x, suggest=T, n.suggests = 1)
+  x <- ifelse(is.null(x) == T, "correct", x[3])
+})))
+# replace adjective with correction
+iceamp <- iceamp %>%
+  mutate(Adjective = ifelse(Correction != "correct", Correction, Adjective))
+# inspect
+head(iceamp)
+```
+
+## Code priming{-}
+
+```{r amphkpie_01_47, echo=T, eval = T, message=FALSE, warning=FALSE}
+# code priming
+prim <- c(rep(0, 1), iceamp$Variant[1:length(iceamp$Variant)-1])
+primtb <- cbind(iceamp$Variant, prim)
+iceamp$Priming <- as.vector(unlist(apply(primtb, 1, function(x){
+  x <- ifelse(x[1] == "0" & x[2] == "0", "NotPrimed",
+              ifelse(x[1] == x[2], "Primed", "NotPrimed"))
+})))
+# inspect data
+head(iceamp)
+```
+
+## Removal of misfits{-}
+
+```{r amphkpie_01_49, echo=T, eval = T, message=FALSE, warning=FALSE}
+nrow(iceamp)
+sups <- c(".*most.*", ".*more.*") 
+negs <- c(".*not.*", ".*never.*", ".*n't.*")
+downtoners <- c(".*sort/.*", ".*kind/.*", ".* bit/.*", ".*somewhat.*",
+                ".*fairly.*", ".*rather.*", ".*reasonably.*", 
+                ".*slightly.*", ".*comparatively.*", ".*semi.*", 
+                ".*relatively.*", ".*little.*", ".*somehow.*", 
+                ".*almost.*", ".*partly.*", ".*hardly.*", ".* less.*",
+                ".*barely.*", ".* just/.*")
+specialforms <- c(".* too.*", ".*quite.*", ".*much.*")
+postdowntoners <- c(".*enough.*")
+iceamp <- iceamp %>%
+  filter(!str_detect(PreContextLong, paste(sups,collapse="|")),
+         !str_detect(PreContextLong, paste(negs,collapse="|")),
+         !str_detect(PreContextLong, paste(downtoners,collapse="|")),
+         !str_detect(PreContextLong, paste(specialforms,collapse="|")),
+         !str_detect(PostContext, postdowntoners),
+         Variant != "")
+# inspect
+nrow(iceamp)
+```
+
+Now, we save the new data set to the disc.
+
+```{r lamphkpie_01_51, echo=T, eval = T, message=FALSE, warning=FALSE}
+# save raw data to disc
+base::saveRDS(iceamp, file = here::here("data/editdata", "iceamp_02_woneg.rda"))
+```
+
+Inspect the remaining adjectives.
+
+```{r amphkpie_01_53, echo=T, eval = T, message=FALSE, warning=FALSE}
+# inspect adjectives
+adj <- names(table(iceamp$Adjective))
+# save adjectives to disc
+base::saveRDS(adj, file = here::here("data/editdata", "adj.rda"))
+# inspect adjectives
+names(table(adj)) 
+```
+
+
+```{r amphkpie_01_55, echo=T, eval = T, message=FALSE, warning=FALSE}
+# define forms that require removal
+nonpropadj <- c("yeuky", "yon", "di", "huh", "video", "tut", "due", "rugby",
+                "okay", "lust", "ex", "de", "very", "much", "many", "few")
+iceamp <- iceamp %>%
+  filter(!Adjective %in% nonpropadj)
+# save raw data to disc
+base::saveRDS(adj, file = here::here("data/editdata", "iceamp_03_semiclean.rda"))
+# inspect data
+head(iceamp)
+```
+
+## Gradability{-}
+
+Gradability scores are derived from BNC
+
+```{r amphkpie_01_57, echo=T, eval = T, message=FALSE, warning=FALSE}
+# load gradability scores (derived from BNC)
+gradability <- read.delim(here::here("data/supdata", "Gradability_bnc.txt"), sep = "\t", header = T, quote = "", skipNul = T)
+iceamp$Gradability <- ifelse(iceamp$Adjective %in% gradability$Adjective, gradability$Beta, 1)
+# inspect 
+head(iceamp)
+```
+
+## Semantic classification{-}
+
+Semantic categories (@tagliamonte2008intensifiers, based on @dixon1977adjectives)
+
+- dimension = semdim (e.g. *big*, *large*, *little*, *small*, *long*, *short*, *wide*, *narrow*, *thick*)
+
+- difficulty = semdif (e.g. *difficult*, *simple*)
+
+- physical property = (e.g. *hard*, *soft*, *heavy*, *light*, *rough*, *smooth*, *hot*, *sweet*)
+
+- color = semcol (e.g. *black*, *white*, *red*)
+
+- human propensity: semhup (e.g. *jealous*, *happy*, *kind*, *clever*, *generous*, *gay*, *rude*)
+
+- age = semage (e.g. *new*, *young*, *old*) 
+
+- value (e.g. *good*, *bad*, *proper*, *perfect*, *excellent*, *delicious*, *poor*)
+
+- speed  (e.g. *fast*, *quick*, *slow*)
+
+- position (e.g. *right*, *left*, *near*, *far*)
+
+- other
+
+
+
+```{r amphkpie_01_59, echo=T, eval = T, message=FALSE, warning=FALSE}
+# age
+semage <- c("actual", "adolescent", "aged", "ancestral", "ancient", 
+            "annual", "archaeological", "archaic", "biographical",
+            "contemporary", "elderly", "foster", "generational", 
+            "historic", "historical", "immature", "junior", "late", 
+            "mature", "medieval", "modern", "old", "oldfashioned", 
+            "outdated", "past", "preliminary", "present", "primary", 
+            "prime", "prior", "puerile", "recent", "seasonal",
+            "senile", "senior", "temporary", "topical", "veteran", 
+            "young", "youthful")
+# color
+semcol <- c("colourful", "darkened", "pinkish", "reddish", "black", 
+            "blue", "brown", "coloured", "dark", "gold", "golden", 
+            "gray", "green", "grey", "lime", "marine", "orange", 
+            "pink", "purple", "red", "silver", "white", "yellow")
+semdif <- c("basic", "complicated", "difficult", "easy", "elusive", 
+            "facile", "precarious", "risky", "simple", "stressful", 
+            "tricky", "twisted", "unpromising")
+# dimension
+semdim <- c("adjacent", "angled", "arctic", "back", "backward", "big", 
+            "bottom", "brief", "bright", "broad", "central", "centralised",
+            "centred", "close", "compact", "deep", "diagonal", 
+            "direct", "distant", "distorted", "down", "downward", 
+            "early", "east", "easterly", "eastern", "endemic", "endless",
+            "equatorial", "european", "ewen", "far", "few", "first", "flat", 
+            "foreign", "foremost", "forthcoming", "forward", "free", 
+            "front", "frontal", "further", "geographical", "giant", 
+            "gigantic", "global", "grand", "half", "halved", "halving", 
+            "high", "horizontal", "huge", "inner", "inside", "internal",
+            "international", "large", "last", "latter", "left", "linear",
+            "little", "local", "locating", "long", "low", "massive", 
+            "micro", "mid", "middle", "minimal", "minimalist", 
+            "minimum", "minor", "misleading", "narrow", "national", 
+            "nationwide", "native", "near", "nearby", "next", "north",
+            "northern", "off", "onward", "orientated", "outside", "over",
+            "overhanging", "overlapping", "pacific", "parallel", "paramount",
+            "peripheral", "petite", "polar", "proportional", "provincial", 
+            "public", "rear", "regional", "remote", "reverse", "round", 
+            "rural", "separate", "separated", "short", "sizeable", "slight",
+            "small", "south", "southern", "southwest", "spinal", "square",
+            "steep", "stratospheric", "suburban", "super", "tall", "teensy", 
+            "terminal", "territorial", "thick", "thickened", "thin", 
+            "tight", "tiny", "titanic", "top", "torrential", "touring",
+            "tremendous", "under", "universal", "unseeded", "upward", 
+            "urban", "urbanised", "vast", "vertical", "warped", "wee", 
+            "west", "western", "wide", "widespread")
+semhup <- c("able", "abrasive", "abusive", "academic", "accomplished",
+            "advanced", "adverse", "afraid", "aggressive", "aimless", 
+            "amused", "amusing", "analytical", "angry", "anxious",
+            "appreciative", "apprehensive", "ashamed", "astute", "aware",
+            "benevolent", "besetting", "blind", "bold", "bossy", 
+            "brave", "brutal", "busy", "callous", "candid", "capable", 
+            "careful", "challenging", "charismatic", "cheated", "clever",
+            "cocky", "compelling", "competent", "competitive", 
+            "concerned", "confident", "consultative", "convinced", 
+            "creative", "cross", "cruel", "cute", 
+            "cynical", "delighted", "depressed", "despairing", 
+            "desperate", "despondent", "disappointed", 
+            "dodgy", "dotty", "dubious", "dull", "dumb", "eager", 
+            "elitist", "embarrassed", "emotional", "encouraging", 
+            "entertaining", "enthusiastic", "erudite", "evil", "excited",
+            "fanatic", "fearful", "ferocious", 
+            "fierce", "foolish", "forceful", "fortunate", "fraudulent",
+            "friendly", "frustrated", "fun", 
+            "funny", "furious", "generous", "gifted", "glad", 
+            "goodhearted", "gracious", "grateful", 
+            "grim", "gross", "gutless", "hairy", "hapless", "happy",
+            "hopeful", "hopeless", "horrible", "hostile", 
+            "hysterical", "ignorant", "ill", "imperative", 
+            "incompetent", "inexorable", "inexperienced", 
+            "infallible", "informed", "insatiable", "insidious", 
+            "intellectual", "intelligent", "intriguing", 
+            "inventive", "jealous", "joyful", "keen", "lazy", 
+            "learned", "learnt", "loath", "lone", "lonely", 
+            "lucky", "lunatic", "mad", "mean", "minded", "motivating", 
+            "nasty", "nervous", "nice", 
+            "optimistic", "passionate", "patronising", "pessimistic", 
+            "pleased", "polite", "poor", 
+            "preachy", "prepared", "presumptuous", "primitive", 
+            "procedural", "professional", "promotional", 
+            "proud", "prudential", "psycho", "puzzled", "rapt", 
+            "rational", "regretful", "relentless", 
+            "resourceful", "respected", "rich", "romantic", "rowdy", 
+            "rude", "sad", "sane", "sarcastic", 
+            "satisfied", "satisfying", "scared", "sceptical", 
+            "selective", "selfish", "sensitive", 
+            "sentimental", "sick", "silly", "skilful", "skilled", 
+            "smart", "snotty", "sociable", "sophisticated", 
+            "sorry", "sovereign", "spiteful", "staunch", "strategic", 
+            "strict", "stubborn", "stupid", 
+            "suffering", "superior", "supportive", "suspicious", 
+            "tactic", "talented", "technical", "treacherous", 
+            "troubled", "unable", "unanswered", "unaware", "uncaring",
+            "ungrateful", "unhappy", "unsmiling", 
+            "unsocial", "upset", "valiant", "valid", "vengeful", 
+            "vile", "wicked", "willing", "wise", "witty", "worried")
+# physical property
+semphy <- c("cheap", "clear", "cold", "comfortable", "cool", "dark", 
+            "different", "dry", "flexible", "hard", 
+            "heavy", "hot", "light", "neat", "obvious", "quick", 
+            "quiet", "real", "same", "scarce", "similar", 
+            "slow", "strong", "sweet", "tidy", "warm")
+# Value
+semval <- c("amazing", "appropriate", "awful", "bad", "beautiful", 
+            "bizarre", "boring", "brilliant", 
+            "competitive", "counterproductive", "dangerous", "easy", 
+            "effective", "efficient", "essential", "excellent", 
+            "exciting", "expensive", "fantastic", "fat", "good", 
+            "great", "important", "inadequate", "interesting", 
+            "new", "original", "painful", "pathetic", "popular", 
+            "positive", "relevant", "ridiculous", "right", 
+            "scary", "serious", "simple", "special", "strange", 
+            "sure", "terrible", "tough", "trendy", "true", "ugly",  
+            "uncomfortable", "unrealistic", "unusual", "useful", 
+            "useless", "weird", "wealthy", "worser", "worthwhile", 
+            "wrong", "yummy")
+# add semantic type classification
+iceamp <- iceamp %>%
+  dplyr::mutate(SemanticCategory = ifelse(Adjective %in% semage, "Age", 
+                                   ifelse(Adjective %in% semcol, "Color",
+                                   ifelse(Adjective %in% semdif, "Difficulty",
+                                   ifelse(Adjective %in% semdim, "Dimension",
+                                   ifelse(Adjective %in% semhup,
+                                          "HumanPropensity", 
+                                  ifelse(Adjective %in% semphy,
+                                         "PhysicalProperty", 
+                                  ifelse(Adjective %in% semval, "Value",
+                                         Adjective)))))))) %>%
+  dplyr::mutate(SemanticCategory = ifelse(SemanticCategory == "Age" | SemanticCategory == "Color" | SemanticCategory == "Difficulty" | SemanticCategory == "Dimension" | SemanticCategory == "HumanPropensity" | SemanticCategory == "PhysicalProperty" | SemanticCategory == "Value", SemanticCategory, "Other"))
+# extract adjectives and their semantic class
+iceamp_adjs <- iceamp %>%
+  dplyr::select(Adjective, SemanticCategory) %>%
+  unique()
+# save raw data to disc
+base::saveRDS(adj, file = here::here("data/editdata", "adj_semclass.rda"))
+# table sem class of tokens
+table(iceamp$SemanticCategory)
+```
+
+## Coding emotionality{-}
+
+Sentiment analysis
+
+```{r amphkpie_01_63, echo=T, eval = T, message=FALSE, warning=FALSE}
+# code emotion
+class_emo <- get_nrc_sentiment(iceamp$Adjective)
+# process sentiment
+iceamp$Emotionality <- as.vector(unlist(apply(class_emo, 1, function(x){
+  x <- ifelse(x[9] == 1, "NegativeEmotional",
+              ifelse(x[10] == 1, "PositiveEmotional", "NonEmotional")) } )))
+# revert order of factor Emotionality
+iceamp$Emotionality <- factor(iceamp$Emotionality, levels = c("NonEmotional", "NegativeEmotional", "PositiveEmotional"))
+# inspect data
+head(iceamp)
+```
+
+# Data testing
+
+Recode so as predicative
+
+```{r amphkpie_01_67, echo=T, eval = T, message=FALSE, warning=FALSE}
+iceamp <- iceamp %>%
+  mutate(Function = ifelse(Variant == "so", "Predicative", Function))
+nrow(iceamp)
+```
+
+```{r amphkpie_01_65, echo=T, eval = T, message=FALSE, warning=FALSE}
+so_ex <- iceamp %>%
+  select(Id, Corpus, File, Variant, SpeechUnit, PreContextLong, Token, PostContext, Function) %>%
+  filter(Variant == "so")
+# inspect
+head(so_ex)
+```
+
+Manual correction
+
+```{r amphkpie_01_67, echo=T, eval = T, message=FALSE, warning=FALSE}
+iceamp_edited <- iceamp %>%
+  mutate(Function = case_when(
+      Variant == "so" & Corpus == "ICE-HK" & File == "S1A-022" & Id == "3280" ~ "Attributive",
+      Variant == "so" & Corpus == "ICE-HK" & File == "S1A-080" & Id == "12308" ~ "Attributive",
+      Variant == "so" & Corpus == "ICE-IND" & File == "S1A-017" & Id == "17694" ~ "Attributive",
+      Variant == "so" & Corpus == "ICE-IND" & File == "S1A-022" & Id == "18168" ~ "Attributive",
+      Variant == "so" & Corpus == "ICE-IND" & File == "S1A-065" & Id == "22939" ~ "Attributive",
+      Variant == "so" & Corpus == "ICE-IND" & File == "S1A-066" & Id == "23060" ~ "Attributive",
+      TRUE ~ Function
+  )) %>%
+  filter(!(Id == "2937" & Corpus == "ICE-HK" & File == "S1A-020")) %>%
+  filter(!(Id == "4689" & Corpus == "ICE-HK" & File == "S1A-031")) %>%
+  filter(!(Id == "8761" & Corpus == "ICE-HK" & File == "S1A-056")) %>%
+  filter(!(Id == "9652" & Corpus == "ICE-HK" & File == "S1A-061")) %>%
+  filter(!(Id == "10217" & Corpus == "ICE-HK" & File == "S1A-065")) %>%
+  filter(!(Id == "10555" & Corpus == "ICE-HK" & File == "S1A-067")) %>%
+  filter(!(Id == "11009" & Corpus == "ICE-HK" & File == "S1A-070")) %>%
+  filter(!(Id == "11488" & Corpus == "ICE-HK" & File == "S1A-073")) %>%
+  filter(!(Id == "11897" & Corpus == "ICE-HK" & File == "S1A-077")) %>%
+  filter(!(Id == "14623" & Corpus == "ICE-HK" & File == "S1A-094")) %>%
+  filter(!(Id == "15965" & Corpus == "ICE-IND" & File == "S1A-003")) %>%
+  filter(!(Id == "16060" & Corpus == "ICE-IND" & File == "S1A-004")) %>%
+  filter(!(Id == "16462" & Corpus == "ICE-IND" & File == "S1A-006")) %>%
+  filter(!(Id == "17092" & Corpus == "ICE-IND" & File == "S1A-012")) %>%
+  filter(!(Id == "17109" & Corpus == "ICE-IND" & File == "S1A-012")) %>%
+  filter(!(Id == "17418" & Corpus == "ICE-IND" & File == "S1A-015")) %>%
+  filter(!(Id == "17716" & Corpus == "ICE-IND" & File == "S1A-017")) %>%
+  filter(!(Id == "17991" & Corpus == "ICE-IND" & File == "S1A-020")) %>%
+  filter(!(Id == "18348" & Corpus == "ICE-IND" & File == "S1A-023")) %>%
+  filter(!(Id == "20609" & Corpus == "ICE-IND" & File == "S1A-043")) %>%
+  filter(!(Id == "21139" & Corpus == "ICE-IND" & File == "S1A-048")) %>%
+  filter(!(Id == "22809" & Corpus == "ICE-IND" & File == "S1A-064")) %>%
+  filter(!(Id == "22951" & Corpus == "ICE-IND" & File == "S1A-065")) %>%
+  filter(!(Id == "23000" & Corpus == "ICE-IND" & File == "S1A-065")) %>%
+  filter(!(Id == "24242" & Corpus == "ICE-IND" & File == "S1A-075")) %>%
+  filter(!(Id == "24500" & Corpus == "ICE-IND" & File == "S1A-078")) %>%
+  filter(!(Id == "26149" & Corpus == "ICE-IND" & File == "S1A-090")) %>%
+  filter(!(Id == "27474" & Corpus == "ICE-PHI" & File == "S1A-004")) %>%
+  filter(!(Id == "33382" & Corpus == "ICE-PHI" & File == "S1A-062")) %>%
+  filter(!(Id == "34235" & Corpus == "ICE-PHI" & File == "S1A-071")) %>%
+  filter(!(Id == "34431" & Corpus == "ICE-PHI" & File == "S1A-073"))
+# save raw data to disc
+base::saveRDS(iceamp_edited, file = here::here("data/editdata", "iceamp_04_clean.rda"))
+# inspect
+nrow(iceamp_edited)
+nrow(iceamp)
+```
+
+## Example extraction{-}
+
+```{r amphkpie_01_61, echo=T, eval = T, message=FALSE, warning=FALSE}
+ex <- iceamp_edited %>%
+  dplyr::select(File, Function, PreContextLong, Adjective, PostContext, Variant) %>%
+  dplyr::mutate(Example = paste(PreContextLong, Adjective, PostContext, sep = " ")) %>%
+  dplyr::select(File, Function, Example, Variant) %>%
+  dplyr::mutate(Example = str_remove_all(Example, "/[A-Z]{2,}\\${0,1}")) %>%
+  dplyr::filter(Variant != "0") %>%
+  dplyr::mutate(Id = 1:length(Example)) %>%
+  dplyr::arrange(desc(Variant))
+# save raw data to disc
+base::saveRDS(ex, file = here::here("data/editdata", "iceamp_ex.rda"))
+# inspect data
+head(ex)
+```
+
+
+
+We have reached the end of part 1 of the analysis.
+
+## Session information{-}
+
+```{r amphkpie_01_71, echo=T, eval = T, message=FALSE, warning=FALSE}
+sessionInfo()
+```

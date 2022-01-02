@@ -1,0 +1,1318 @@
+---
+title: "A corpus-based analysis of ongoing change in the adjective amplifier systems of Hong Kong, Philippine, and Indian English - Part 3"
+author: Martin Schweinberger
+date: "`r format(Sys.time(), '%Y-%m-%d')`"
+output: word_document
+---
+
+# Introduction{-}
+
+This document shows an analysis of adjective amplification in Hong Kong, Indian , and Philippine English based on the respective components of the International Corpus of English (ICE). 
+
+```{r, echo=FALSE}
+knitr::opts_chunk$set(error = TRUE)
+```
+
+## Preparation{-}
+
+In a first step, the session is prepared by clearing the work space, setting options, activating packages and functions, as well as loading relevant functions.
+
+```{r amphkpie_02_01, echo=T, eval = T, message=TRUE, warning=TRUE}
+# load packages
+library(tidyverse)
+library(tidyr)
+library(here)
+# set options
+options(stringsAsFactors = F)                           
+options(scipen = 999) 
+options(max.print=10000)  
+```
+
+## Load data{-}
+
+```{r amphkpie_02_03, echo=T, eval = T, message=TRUE, warning=TRUE}
+ice <- base::readRDS(file = here::here("data/editdata", "iceamp_04_clean.rda"))
+# inspect
+head(ice)
+```
+
+## Clean data
+
+Factorize predictors and scale frequency
+
+```{r amphkpie_02_05, echo=T, eval = T, message=TRUE, warning=TRUE}
+ice <- ice %>%
+  select(-Id, -Correction, -SpeechUnit, -SpeechUnitCount, -PreContext, -Token, -L1, 
+         -PostContext, -PreContextLong, -Amplified, -Nationality, -OtherLanguages, -Birthplace) %>%
+  dplyr::mutate(Emotionality = ifelse(Emotionality == "PositiveEmotional", "Positive",
+                               ifelse(Emotionality == "NonEmotional", "Neutral", "Negative")),
+                Emotionality = factor(Emotionality, levels = c("Negative", "Neutral", "Positive")),
+                Frequency = as.vector(scale(Frequency)),
+                Gender = factor(Gender),
+                EducationLevel = factor(EducationLevel),
+                Priming = factor(Priming),
+                Emotionality = factor(Emotionality),
+                Function = factor(Function),
+                Ethnicity = factor(Ethnicity),
+                SemanticCategory = factor(SemanticCategory),
+                Speaker = paste0(File, "$", Speaker)) %>%
+  select(-File, -WordCount)
+str(ice)
+```
+
+Determine adjective frequency
+
+```{r amphkpie_02_07, echo=T, eval = T, message=TRUE, warning=TRUE}
+fadj <- names(table(ice$Adjective))[which(table(ice$Adjective) > 50)]
+fadj
+```
+
+Determine variant frequency
+
+```{r amphkpie_02_09, echo=T, eval = T, message=TRUE, warning=TRUE}
+famp <- names(table(ice$Variant))[which(table(ice$Variant) > 50)]
+famp
+```
+Collapse infrequent adjectives and amplifiers
+
+```{r amphkpie_02_11, echo=T, eval = T, message=TRUE, warning=TRUE}
+ice <- ice %>%
+  mutate(Adjective = ifelse(Adjective == "different", "different", "other"),
+         Variant = ifelse(Variant %in% famp, Variant, "other"),
+         Adjective = factor(Adjective),
+         Variant = factor(Variant),
+         SemanticCategory = ifelse(SemanticCategory == "Value", "Value", "Other"),
+         SemanticCategory = factor(SemanticCategory)) %>%
+  group_by(Corpus) %>%
+  mutate(Frequency = scale(Frequency)[,1])
+str(ice)
+```
+
+## Data inspection{-}
+
+Visualize Variant by Corpus and Age
+
+```{r amphkpie_02_13, echo=T, eval = T, message=TRUE, warning=TRUE}
+ice %>%
+  mutate(Age = ifelse(Age == "16-25"|Age == "17-25"|Age == "18-25", 3, 
+               ifelse(Age == "26-40"|Age == "26-41", 2, 
+               ifelse(Age == "41+"|Age == "42+", 1, Age))),
+         Corpus = ifelse(Corpus == "ICE-HK", "ICE Hong Kong",
+                  ifelse(Corpus == "ICE-IND", "ICE India", "ICE Philippines"))) %>%
+  group_by(Corpus, Age, Variant) %>%
+  summarise(Frequency = n()) %>%
+  group_by(Corpus, Age) %>%
+  mutate(AllSlots = sum(Frequency),
+         Percent = round(Frequency/AllSlots*100, 1)) %>%
+  select(-Frequency, -AllSlots) %>%
+  ggplot(aes(x = Age, y = Percent, 
+             group = Variant, color = Variant, linetype = Variant)) +
+  facet_grid(cols = vars(Corpus)) +
+  geom_line() + 
+  coord_cartesian(ylim = c(0, 100)) +
+  theme_set(theme_bw(base_size = 12)) +
+  theme(legend.position="top", 
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(), 
+        axis.text.x = element_text(size=10)) +
+  scale_color_manual(breaks = c("other", "really", "so", "very"),
+                     values = c("gray80", "gray60", "gray40", "gray20")) +
+  scale_linetype_manual(breaks = c("other", "really", "so", "very"),
+                        values = c(4, 3, 2, 1)) + 
+  scale_x_discrete(breaks = 1:3, 
+                   labels = c("41+", "26-41", "16-25"))
+ggsave(file = 
+           here::here("images", "VariantAgeCorpus.png"),
+         height = 4,  width = 6, dpi = 320)
+  
+```
+
+Visualize Variant by Corpus and Age and Function
+
+```{r amphkpie_02_15, echo=T, eval = T, message=TRUE, warning=TRUE}
+ice %>%
+  mutate(Age = ifelse(Age == "16-25"|Age == "17-25"|Age == "18-25", 3, 
+               ifelse(Age == "26-40"|Age == "26-41", 2, 
+               ifelse(Age == "41+"|Age == "42+", 1, Age))),
+         Corpus = ifelse(Corpus == "ICE-HK", "ICE Hong Kong",
+                  ifelse(Corpus == "ICE-IND", "ICE India", "ICE Philippines"))) %>%
+  group_by(Corpus, Age, Variant, Function) %>%
+  summarise(Frequency = n()) %>%
+  group_by(Corpus, Age, Function) %>%
+  mutate(AllSlots = sum(Frequency),
+         Percent = round(Frequency/AllSlots*100, 1)) %>%
+  select(-Frequency, -AllSlots) %>%
+  ggplot(aes(x = Age, y = Percent, 
+             group = Variant, color = Variant, linetype = Variant)) +
+  facet_grid(cols = vars(Corpus), rows=vars(Function)) +
+  geom_line() + 
+  coord_cartesian(ylim = c(0, 100)) +
+  theme_set(theme_bw(base_size = 12)) +
+  theme(legend.position="top", 
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(), 
+        axis.text.x = element_text(size=10)) +
+  scale_color_manual(breaks = c("other", "really", "so", "very"),
+                     values = c("gray80", "gray60", "gray40", "gray20")) +
+  scale_linetype_manual(breaks = c("other", "really", "so", "very"),
+                        values = c(4, 3, 2, 1)) +  
+  scale_x_discrete(breaks = 1:3, 
+                   labels = c("41+", "26-41", "16-25"))
+ggsave(file = here::here("images", "VariantAgeCorpusFunction.png"),
+         height = 4,  width = 6, dpi = 320)
+  
+```
+
+# Analysis of ICE-PHI{-}
+
+## VERY{-}
+
+```{r amphkpie_02_17, echo=T, eval = T, message=TRUE, warning=TRUE}
+phi_very <- ice %>%
+  ungroup() %>%
+  filter(Corpus == "ICE-PHI") %>%
+  mutate(Age = factor(Age),
+         Date = ifelse(Date == "1991"|Date == "1992", "Before1993", "After1998"),
+         Date = factor(Date, levels = c("Before1993", "After1998")),
+         Corpus = factor(Corpus),
+         Speaker = factor(Speaker),
+         Variant = ifelse(Variant == "very", "very", "other"),
+         Variant = factor(Variant)) %>%
+  droplevels()
+# inspect
+head(phi_very)
+```
+
+Find variables that cannot be tested
+
+```{r amphkpie_02_19, echo=T, eval = T, message=TRUE, warning=TRUE}
+l <- sapply(phi_very, function(x) is.factor(x))
+m <- phi_very[, l]
+ifelse(n <- sapply(m, function(x) length(levels(x))) == 1, "DROP", "NODROP")
+```
+
+Remove variables and NA
+
+```{r amphkpie_02_21, echo=T, eval = T, message=TRUE, warning=TRUE}
+nrow(phi_very)
+phi_very <- phi_very %>%
+  select(-Corpus, -EducationLevel, -Ethnicity) %>%
+  na.omit()
+nrow(phi_very)
+```
+
+## Regression analysis{-}
+
+Prepare data
+
+```{r amphkpie_02_23, echo=T, eval = T, message=TRUE, warning=TRUE}
+library(rms)
+library(lme4)
+# set options
+options(contrasts  =c("contr.treatment", "contr.poly"))
+phi_very.dist <- datadist(phi_very)
+options(datadist = "phi_very.dist")
+# generate models
+m0.glmer = glmer(Variant ~ 1 + (1|Speaker), 
+                 data = phi_very, family = "binomial",
+                 control=glmerControl(optimizer="bobyqa"))
+# extract aics
+aic.m0.glmer <- AIC(logLik(m0.glmer))
+aic.m0.glmer
+```
+
+### Model fitting{-}
+
+Age
+
+```{r amphkpie_02_25, echo=T, eval = T, message=TRUE, warning=TRUE}
+m1.glmer <- update(m0.glmer, .~.+ Age)
+anova(m1.glmer, m0.glmer, test = "Chi")       
+library(car)
+Anova(m1.glmer, type = "III", test = "Chi")   
+```
+
+Gender
+
+```{r amphkpie_02_27, echo=T, eval = T, message=TRUE, warning=TRUE}
+m2.glmer <- update(m1.glmer, .~.+ Gender)
+car::vif(m2.glmer)
+anova(m2.glmer, m1.glmer, test = "Chi")       
+Anova(m2.glmer, type = "III", test = "Chi")   
+```
+
+Function
+
+```{r amphkpie_02_29, echo=T, eval = T, message=TRUE, warning=TRUE}
+m3.glmer <- update(m2.glmer, .~.+ Function)
+car::vif(m3.glmer)
+anova(m3.glmer, m2.glmer, test = "Chi")       
+Anova(m3.glmer, type = "III", test = "Chi")   
+```
+
+Date
+
+```{r amphkpie_02_31, echo=T, eval = T, message=TRUE, warning=TRUE}
+m4.glmer <- update(m3.glmer, .~.+ Date)
+car::vif(m4.glmer)
+anova(m4.glmer, m3.glmer, test = "Chi")
+```
+
+Frequency
+
+```{r amphkpie_02_33, echo=T, eval = T, message=TRUE, warning=TRUE}
+m5.glmer <- update(m3.glmer, .~.+ Frequency)
+car::vif(m5.glmer)
+anova(m5.glmer, m3.glmer, test = "Chi")   
+```
+
+Priming
+
+```{r amphkpie_02_35, echo=T, eval = T, message=TRUE, warning=TRUE}
+m6.glmer <- update(m3.glmer, .~.+ Priming)
+car::vif(m6.glmer)
+anova(m6.glmer, m3.glmer, test = "Chi")  
+```
+
+Gradability
+
+```{r amphkpie_02_37, echo=T, eval = T, message=TRUE, warning=TRUE}
+m7.glmer <- update(m3.glmer, .~.+ Gradability)
+car::vif(m7.glmer)
+anova(m7.glmer, m3.glmer, test = "Chi")       
+Anova(m7.glmer, type = "III", test = "Chi")   
+```
+
+SemanticCategory
+
+```{r amphkpie_02_39, echo=T, eval = T, message=TRUE, warning=TRUE}
+m8.glmer <- update(m7.glmer, .~.+ SemanticCategory)
+car::vif(m8.glmer)
+anova(m8.glmer, m7.glmer, test = "Chi")   
+Anova(m8.glmer, type = "III", test = "Chi")
+```
+
+Emotionality
+
+```{r amphkpie_02_41, echo=T, eval = T, message=TRUE, warning=TRUE}
+m9.glmer <- update(m8.glmer, .~.+ Emotionality)
+car::vif(m9.glmer)
+anova(m9.glmer, m8.glmer, test = "Chi")      
+```
+
+
+Adjective
+
+```{r amphkpie_02_43, echo=T, eval = T, message=TRUE, warning=TRUE}
+m10.glmer <- update(m8.glmer, .~.+ Adjective)
+car::vif(m10.glmer)
+anova(m10.glmer, m8.glmer, test = "Chi")   
+Anova(m10.glmer, type = "III", test = "Chi")   
+```
+
+2-way interaction
+
+Extract predictors
+
+```{r amphkpie_02_45, echo=T, eval = T, message=TRUE, warning=TRUE}
+library(utils)
+#colnames(pphi)
+# define variables included in interactions
+vars <- c("Age" , "Gender", "Function", "Date", "Frequency", "Priming", 
+          "Gradability", "SemanticCategory", "Emotionality", "Adjective")
+# 3-way interactions (involving Variant)
+intac_2way <- t(combn(vars, 2))
+int2w <- paste(intac_2way[,1], intac_2way[,2], sep = "*")
+#int2w
+
+# check which 2-way interactions can be included
+check_models <- function(int2w) {
+  rslt <- sapply(int2w, function(x){
+  frml <- formula(paste0("Variant ~  (1|Adjective) +  Age + Gender + Function + Gradability + SemanticCategory + Adjective + ", x))
+  modl <- glmer(frml, data = phi_very, family = "binomial", control=glmerControl(optimizer="bobyqa"))
+  report <- if(max(as.vector(unlist(car::vif(modl)[,1]))) <= 10 & as.vector(unlist(anova(modl, m10.glmer, test = "Chi")[8]))[2] <= 0.1){
+    print(anova(modl, m10.glmer, test = "Chi"))
+  } else {cat("Predictor not significant or vifs too high!\n")}
+  return(report)
+})
+  return(rslt)
+}
+# inspect
+#possible_models <- check_models(int2w)
+```
+
+Significant models perform significantly worse than m10.glmer (higher AIC, BIC, deviance)
+
+Extract predictors
+
+```{r amphkpie_02_51, echo=T, eval = T, message=TRUE, warning=TRUE}
+# find all 3-way interactions
+library(utils)
+#colnames(pphi)
+# define variables included in interactions
+vars <- c("Age" , "Gender", "Function", "Date", "Frequency", "Priming", 
+          "Gradability", "SemanticCategory", "Emotionality", "Adjective")
+# 3-way interactions (involving Variant)
+intac_3way <- t(combn(vars, 3))
+int3w <- paste(intac_3way[,1], intac_3way[,2], intac_3way[,3], sep = "*")
+# inspect
+#int3w
+
+# check which 3-way interactions can be included
+#possible_models <- check_models(int3w)
+```
+
+All 3-way interactions are either insignificant or their vifs are too high!
+
+Compare final minimal adequate model to intercept-only base-line model
+
+```{r amphkpie_02_53, echo=T, eval = T, message=TRUE, warning=TRUE}
+mf.glmer <- m10.glmer
+mf.very <- m10.glmer
+# compare models                
+anova(mf.glmer, m0.glmer, test = "Chi")
+Anova(mf.glmer, type = "III", test = "Chi")
+```
+
+### Tabulate regression results{-}
+
+```{r amphkpie_02_55, echo=T, eval = T, message=TRUE, warning=TRUE}
+library(sjPlot)
+tab_model(mf.glmer)
+```
+
+Extract effects
+
+```{r amphkpie_02_57, echo=T, eval = T, message=TRUE, warning=TRUE}
+library(ggeffects)
+effectsdf <- ggeffect(mf.glmer)
+# inspect effects
+effectsdf
+```
+
+### Visualize effects{-}
+
+Plot effects
+ 
+```{r amphkpie_02_59, echo=T, eval = T, message=TRUE, warning=TRUE}
+library(effects)
+png(here::here("images", "effectsfinalmodel_phi_very.png"),  width = 960, height = 480) 
+plot(allEffects(mf.glmer), type="response", ylim=c(0,1), grid=TRUE, 
+     lines = list(col="black", lty = 1, confint=list(style="bars", col = "grey80")), ylab = "Probability")
+dev.off()
+plot(allEffects(mf.glmer), type="response", ylim=c(0,1), grid=TRUE, 
+     lines = list(col="black", lty = 1, confint=list(style="bars", col = "grey80")), ylab = "Probability")
+```
+
+### Visualize individual effects{-}
+
+Custom plot
+
+```{r amphkpie_02_61, echo=T, eval = T, message=TRUE, warning=TRUE}
+library(gridExtra)
+p1 <- plot_model(mf.glmer, type = "pred", terms = c("Age"))
+p2 <- plot_model(mf.glmer, type = "pred", terms = c("Gender"))
+p3 <- plot_model(mf.glmer, type = "pred", terms = c("Function"))
+p4 <- plot_model(mf.glmer, type = "pred", terms = c("Gradability"))
+p5 <- plot_model(mf.glmer, type = "pred", terms = c("SemanticCategory"))
+p6 <- plot_model(mf.glmer, type = "pred", terms = c("Adjective"))
+grid.arrange(grobs = list(p1, p2, p3, p4, p5, p6), widths = c(1, 1), layout_matrix = rbind(c(1, 2), c(3, 4), c(5, 6)))
+```
+
+Publishable plots
+
+Age
+
+```{r amphkpie_02_63, echo=T, eval = T, message=TRUE, warning=TRUE}
+phi_very$Probability <- predict(mf.glmer, phi_very, type = "response")
+ggplot(phi_very, aes(Age, Probability)) +
+  stat_summary(fun.y = mean, geom = "point", size = 1.5, color = "gray20") +
+  stat_summary(fun.data = mean_cl_boot, geom = "errorbar", 
+               width = 0.2, size = .5, color = "gray20") +
+  coord_cartesian(ylim = c(-.1, 1)) +
+  theme_set(theme_bw(base_size = 12)) +
+  theme(legend.position="top",
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(), 
+        axis.text.x = element_text(size=10)) +
+  labs(x = "Age", y = "Predicted probability") +
+    scale_x_discrete(limits = rev(levels(phi_very$Age)))
+ggsave(here::here("images", "Pred_Age_phi_very.png"),
+       height = 5,  width = 6, dpi = 320)
+```
+
+```{r amphkpie_02_65, echo=T, eval = T, message=TRUE, warning=TRUE}
+ggplot(phi_very, aes(Gender, Probability)) +
+  stat_summary(fun.y = mean, geom = "point", size = 1.5, color = "gray20") +
+  stat_summary(fun.data = mean_cl_boot, geom = "errorbar", 
+               width = 0.2, size = .5, color = "gray20") +
+  coord_cartesian(ylim = c(-.1, 1)) +
+  theme_set(theme_bw(base_size = 12)) +
+  theme(legend.position="top",
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(), 
+        axis.text.x = element_text(size=10)) +
+  labs(x = "Gender", y = "Predicted probability")
+ggsave(here::here("images", "Pred_Gender_phi_very.png"),
+       height = 5,  width = 6, dpi = 320)
+```
+
+```{r amphkpie_02_67, echo=T, eval = T, message=TRUE, warning=TRUE}
+ggplot(phi_very, aes(Function, Probability)) +
+  stat_summary(fun.y = mean, geom = "point", size = 1.5, color = "gray20") +
+  stat_summary(fun.data = mean_cl_boot, geom = "errorbar", 
+               width = 0.2, size = .5, color = "gray20") +
+  coord_cartesian(ylim = c(-.1, 1)) +
+  theme_set(theme_bw(base_size = 12)) +
+  theme(legend.position="top",
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(), 
+        axis.text.x = element_text(size=10)) +
+  labs(x = "Function", y = "Predicted probability")
+ggsave(here::here("images", "Pred_Function_phi_very.png"),
+       height = 5,  width = 6, dpi = 320)
+```
+
+```{r amphkpie_02_69, echo=T, eval = T, message=TRUE, warning=TRUE}
+ggplot(phi_very, aes(x = Gradability, y = Probability)) +
+  geom_smooth(se = T, method = "lm", color = "gray20") +
+  coord_cartesian(ylim = c(-.1, 1)) +
+  theme_set(theme_bw(base_size = 12)) +
+  theme(legend.position="top",
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(), 
+        axis.text.x = element_text(size=10)) +
+  labs(x = "Gradability", y = "Predicted probability")
+ggsave(here::here("images", "Pred_Gradability_phi_very.png"),
+       height = 5,  width = 6, dpi = 320)
+```
+
+```{r amphkpie_02_71, echo=T, eval = T, message=TRUE, warning=TRUE}
+ggplot(phi_very, aes(reorder(SemanticCategory, -Probability), Probability)) +
+  stat_summary(fun.y = mean, geom = "point", size = 1.5, color = "gray20") +
+  stat_summary(fun.data = mean_cl_boot, geom = "errorbar", 
+               width = 0.2, size = .5, color = "gray20") +
+  coord_cartesian(ylim = c(-.1, 1)) +
+  theme_set(theme_bw(base_size = 12)) +
+  theme(legend.position="top",
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(), 
+        axis.text.x = element_text(size=10, angle = 90)) +
+  labs(x = "SemanticCategory", y = "Predicted probability")
+ggsave(here::here("images", "Pred_SemanticCategory_phi_very.png"),
+       height = 5,  width = 6, dpi = 320)
+```
+
+```{r amphkpie_02_73, echo=T, eval = T, message=TRUE, warning=TRUE}
+ggplot(phi_very, aes(Adjective, Probability)) +
+  stat_summary(fun.y = mean, geom = "point", size = 1.5, color = "gray20") +
+  stat_summary(fun.data = mean_cl_boot, geom = "errorbar", 
+               width = 0.2, size = .5, color = "gray20") +
+  coord_cartesian(ylim = c(-.1, 1)) +
+  theme_set(theme_bw(base_size = 12)) +
+  theme(legend.position="top",
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(), 
+        axis.text.x = element_text(size=10)) +
+  labs(x = "Adjective", y = "Predicted probability") 
+ggsave(here::here("images", "Pred_Adjective_phi_very.png"),
+       height = 5,  width = 6, dpi = 320)
+```
+
+### Visualize random effects
+
+```{r amphkpie_02_75, echo=T, eval = T, message=TRUE, warning=TRUE}
+randomtb <- ranef(mf.glmer)$Speaker
+rndmlngtb <- data.frame(rownames(randomtb), randomtb)
+colnames(rndmlngtb) <- c("Speaker", "Intercept")
+rndmlngtb <- rndmlngtb[order(rndmlngtb$Intercept, decreasing = T),]
+summary(rndmlngtb$Intercept)
+```
+
+Publishable plot
+
+```{r amphkpie_02_79, echo=T, eval = T, message=TRUE, warning=TRUE}
+ggplot(rndmlngtb, aes(Speaker, Intercept)) +
+  geom_point(aes(reorder(Speaker, -Intercept, fun = Intercept), y=Intercept)) +
+  coord_cartesian(ylim = c(-3, 4)) +
+  theme_set(theme_bw(base_size = 12)) +
+  theme(legend.position="none",
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(), 
+        axis.text.x = element_text(size=5, angle=90)) +
+  labs(x = "Speaker", y = "Adjustment to Intercept")
+ggsave(here::here("images", "Pred_Speaker_phi_very.png"),
+       height = 4,  width = 5, dpi = 320)
+```
+
+## REALLY
+
+```{r amphkpie_02_81, echo=T, eval = T, message=TRUE, warning=TRUE}
+phi_really <- ice %>%
+  ungroup() %>%
+  filter(Corpus == "ICE-PHI") %>%
+  mutate(Age = factor(Age),
+         Date = ifelse(Date == "1991"|Date == "1992", "Before1993", "After1998"),
+         Date = factor(Date, levels = c("Before1993", "After1998")),
+         Corpus = factor(Corpus),
+         Speaker = factor(Speaker),
+         Variant = ifelse(Variant == "really", "really", "other"),
+         Variant = factor(Variant)) %>%
+  droplevels()
+# inspect
+head(phi_really)
+```
+
+
+Find variables that cannot be tested
+
+```{r amphkpie_02_83, echo=T, eval = T, message=TRUE, warning=TRUE}
+l <- sapply(phi_really, function(x) is.factor(x))
+m <- phi_really[, l]
+ifelse(n <- sapply(m, function(x) length(levels(x))) == 1, "DROP", "NODROP")
+```
+
+Remove variables and NA
+
+```{r amphkpie_02_85, echo=T, eval = T, message=TRUE, warning=TRUE}
+nrow(phi_really)
+phi_really <- phi_really %>%
+  select(-Corpus, -EducationLevel, -Ethnicity) %>%
+  na.omit()
+nrow(phi_really)
+```
+
+## Regression analysis{-}
+
+Prepare data
+
+```{r amphkpie_02_87, echo=T, eval = T, message=TRUE, warning=TRUE}
+library(rms)
+library(lme4)
+# set options
+options(contrasts  =c("contr.treatment", "contr.poly"))
+phi_really.dist <- datadist(phi_really)
+options(datadist = "phi_really.dist")
+# generate models
+m0.glmer = glmer(Variant ~ 1 + (1|Speaker), 
+                 data = phi_really, family = "binomial",
+                 control=glmerControl(optimizer="bobyqa"))
+# extract aics
+aic.m0.glmer <- AIC(logLik(m0.glmer))
+aic.m0.glmer
+```
+
+### Model fitting{-}
+
+Age
+
+```{r amphkpie_02_89, echo=T, eval = T, message=TRUE, warning=TRUE}
+m1.glmer <- update(m0.glmer, .~.+ Age)
+anova(m1.glmer, m0.glmer, test = "Chi")       
+library(car)
+Anova(m1.glmer, type = "III", test = "Chi")   
+```
+
+Gender
+
+```{r amphkpie_02_91, echo=T, eval = T, message=TRUE, warning=TRUE}
+m2.glmer <- update(m1.glmer, .~.+ Gender)
+car::vif(m2.glmer)
+anova(m2.glmer, m1.glmer, test = "Chi")       
+Anova(m2.glmer, type = "III", test = "Chi")   
+```
+
+Function
+
+```{r amphkpie_02_93, echo=T, eval = T, message=TRUE, warning=TRUE}
+m3.glmer <- update(m1.glmer, .~.+Function)
+car::vif(m3.glmer)
+anova(m3.glmer, m1.glmer, test = "Chi")       
+Anova(m3.glmer, type = "III", test = "Chi")   
+```
+
+Date
+
+```{r amphkpie_02_95, echo=T, eval = T, message=TRUE, warning=TRUE}
+m4.glmer <- update(m1.glmer, .~.+ Date)
+car::vif(m4.glmer)
+anova(m4.glmer, m1.glmer, test = "Chi")
+```
+
+Frequency
+
+```{r amphkpie_02_97, echo=T, eval = T, message=TRUE, warning=TRUE}
+m5.glmer <- update(m1.glmer, .~.+ Frequency)
+car::vif(m5.glmer)
+anova(m5.glmer, m1.glmer, test = "Chi")   
+```
+
+Priming
+
+```{r amphkpie_02_99, echo=T, eval = T, message=TRUE, warning=TRUE}
+m6.glmer <- update(m1.glmer, .~.+ Priming)
+car::vif(m6.glmer)
+anova(m6.glmer, m1.glmer, test = "Chi")
+Anova(m6.glmer, type = "III", test = "Chi")
+```
+
+Gradability
+
+```{r amphkpie_02_101, echo=T, eval = T, message=TRUE, warning=TRUE}
+m7.glmer <- update(m1.glmer, .~.+ Gradability)
+car::vif(m7.glmer)
+anova(m7.glmer, m1.glmer, test = "Chi")       
+```
+
+SemanticCategory
+
+```{r amphkpie_02_103, echo=T, eval = T, message=TRUE, warning=TRUE}
+m8.glmer <- update(m1.glmer, .~.+ SemanticCategory)
+car::vif(m8.glmer)
+anova(m8.glmer, m1.glmer, test = "Chi")   
+```
+
+Emotionality
+
+```{r amphkpie_02_105, echo=T, eval = T, message=TRUE, warning=TRUE}
+m9.glmer <- update(m8.glmer, .~.+ Emotionality)
+car::vif(m9.glmer)
+anova(m9.glmer, m8.glmer, test = "Chi")      
+```
+
+Adjective
+
+```{r amphkpie_02_107, echo=T, eval = T, message=TRUE, warning=TRUE}
+m10.glmer <- update(m8.glmer, .~.+ Adjective)
+car::vif(m10.glmer)
+anova(m10.glmer, m8.glmer, test = "Chi")      
+```
+
+2-way interaction
+
+Extract predictors
+
+```{r amphkpie_02_109, echo=T, eval = T, message=TRUE, warning=TRUE}
+# define variables included in interactions
+vars <- c("Age" , "Gender", "Function", "Date", "Frequency", "Priming", 
+          "Gradability", "SemanticCategory", "Emotionality", "Adjective")
+# 3-way interactions (involving Variant)
+intac_2way <- t(combn(vars, 2))
+int2w <- paste(intac_2way[,1], intac_2way[,2], sep = "*")
+#int2w
+
+# check which 2-way interactions can be included
+check_models <- function(int2w) {
+  rslt <- sapply(int2w, function(x){
+  frml <- formula(paste0("Variant ~  (1|Adjective) +  Age + SemanticCategory + ", x))
+  modl <- glmer(frml, data = phi_really, family = "binomial", control=glmerControl(optimizer="bobyqa"))
+  report <- if(max(as.vector(unlist(car::vif(modl)[,1]))) <= 10 & as.vector(unlist(anova(modl, m8.glmer, test = "Chi")[8]))[2] <= 0.1){
+    print(anova(modl, m10.glmer, test = "Chi"))
+  } else {cat("Predictor not significant or vifs too high!\n")}
+  return(report)
+})
+  return(rslt)
+}
+# inspect
+#possible_models <- check_models(int2w)
+```
+
+3-way interactions
+
+Extract predictors
+
+```{r amphkpie_02_111, echo=T, eval = T, message=TRUE, warning=TRUE}
+# find all 2-way interactions
+library(utils)
+#colnames(pphi)
+# define variables included in interactions
+vars <- c("Age" , "Gender", "Function", "Date", "Frequency", "Priming", 
+          "Gradability", "SemanticCategory", "Emotionality")
+# 3-way interactions (involving Variant)
+intac_3way <- t(combn(vars, 3))
+int3w <- paste(intac_3way[,1], intac_3way[,2], intac_3way[,3], sep = "*")
+# inspect
+#int3w
+
+# check which 3-way interactions can be included
+possible_models <- check_models(int3w)
+```
+
+All 3-way interactions too high
+
+Compare final minimal adequate model to intercept-only base-line model
+
+```{r amphkpie_02_113, echo=T, eval = T, message=TRUE, warning=TRUE}
+mf.glmer <- m8.glmer
+mf.really <- m8.glmer
+# compare models                
+anova(mf.glmer, m0.glmer, test = "Chi")
+Anova(mf.glmer, type = "III", test = "Chi")
+```
+
+### Tabulate regression results{-}
+
+```{r amphkpie_02_115, echo=T, eval = T, message=TRUE, warning=TRUE}
+library(sjPlot)
+tab_model(mf.glmer)
+```
+
+Extract effects
+
+```{r amphkpie_02_117, echo=T, eval = T, message=TRUE, warning=TRUE}
+library(ggeffects)
+effectsdf <- ggeffect(mf.glmer)
+# inspect effects
+effectsdf
+```
+
+### Visualize effects{-}
+
+Plot effects
+ 
+```{r amphkpie_02_119, echo=T, eval = T, message=TRUE, warning=TRUE}
+library(effects)
+png(here::here("images", "effectsfinalmodel_phi_really.png"),  width = 960, height = 480) 
+plot(allEffects(mf.glmer), type="response", ylim=c(0,1), grid=TRUE, 
+     lines = list(col="black", lty = 1, confint=list(style="bars", col = "grey80")), ylab = "Probability")
+dev.off()
+plot(allEffects(mf.glmer), type="response", ylim=c(0,1), grid=TRUE, 
+     lines = list(col="black", lty = 1, confint=list(style="bars", col = "grey80")), ylab = "Probability")
+```
+
+### Visualize individual effects{-}
+
+Custom plot
+
+```{r amphkpie_02_121, echo=T, eval = T, message=TRUE, warning=TRUE}
+library(gridExtra)
+p1 <- plot_model(mf.glmer, type = "pred", terms = c("Age"))
+p2 <- plot_model(mf.glmer, type = "pred", terms = c("SemanticCategory"))
+grid.arrange(p1, p2, nrow = 1)
+```
+
+Publishable plots
+
+Age
+
+```{r amphkpie_02_123, echo=T, eval = T, message=TRUE, warning=TRUE}
+phi_really$Probability <- predict(mf.glmer, phi_really, type = "response")
+ggplot(phi_really, aes(Age, Probability)) +
+  stat_summary(fun.y = mean, geom = "point", size = 1.5, color = "gray20") +
+  stat_summary(fun.data = mean_cl_boot, geom = "errorbar", 
+               width = 0.2, size = .5, color = "gray20") +
+  coord_cartesian(ylim = c(-.1, 1)) +
+  theme_set(theme_bw(base_size = 12)) +
+  theme(legend.position="top",
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(), 
+        axis.text.x = element_text(size=10)) +
+  labs(x = "Age", y = "Predicted probability") +
+    scale_x_discrete(limits = rev(levels(phi_really$Age)))
+ggsave(here::here("images", "Pred_Age_phi_really.png"),
+       height = 5,  width = 6, dpi = 320)
+```
+
+```{r amphkpie_02_125, echo=T, eval = T, message=TRUE, warning=TRUE}
+ggplot(phi_really, aes(SemanticCategory, Probability)) +
+  stat_summary(fun.y = mean, geom = "point", size = 1.5) +
+  stat_summary(fun.data = mean_cl_boot, geom = "errorbar", 
+               width = 0.2, size = .5) +
+  coord_cartesian(ylim = c(-.1, 1)) +
+  theme_set(theme_bw(base_size = 12)) +
+  theme(legend.position="top",
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(), 
+        axis.text.x = element_text(size=10, angle = 90)) +
+  labs(x = "SemanticCategory", y = "Predicted probability")
+ggsave(here::here("images", "Pred_SemanticCategory_phi_really.png"),
+       height = 5,  width = 6, dpi = 320)
+```
+
+### Visualize random effects
+
+```{r amphkpie_02_127, echo=T, eval = T, message=TRUE, warning=TRUE}
+randomtb <- ranef(mf.glmer)$Speaker
+rndmlngtb <- data.frame(rownames(randomtb), randomtb)
+colnames(rndmlngtb) <- c("Speaker", "Intercept")
+rndmlngtb <- rndmlngtb[order(rndmlngtb$Intercept, decreasing = T),]
+summary(rndmlngtb$Intercept)
+```
+
+Publishable plot
+
+```{r amphkpie_02_129, echo=T, eval = T, message=TRUE, warning=TRUE}
+ggplot(rndmlngtb, aes(Speaker, Intercept)) +
+  geom_point(aes(reorder(Speaker, -Intercept, fun = Intercept), y=Intercept)) +
+  coord_cartesian(ylim = c(-2, 4)) +
+  theme_set(theme_bw(base_size = 12)) +
+  theme(legend.position="none",
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(), 
+        axis.text.x = element_text(size=5, angle=90)) +
+  labs(x = "Adjective type", y = "Adjustment to Intercept") 
+ggsave(here::here("images", "Pred_Speaker_phi_really.png"),
+       height = 4,  width = 5, dpi = 320)
+```
+
+## SO
+
+```{r amphkpie_02_131, echo=T, eval = T, message=TRUE, warning=TRUE}
+phi_so <- ice %>%
+  ungroup() %>%
+  filter(Corpus == "ICE-PHI") %>%
+  mutate(Age = factor(Age),
+         Date = ifelse(Date == "1991"|Date == "1992", "Before1993", "After1998"),
+         Date = factor(Date, levels = c("Before1993", "After1998")),
+         Corpus = factor(Corpus),
+         Speaker = factor(Speaker),
+         Variant = ifelse(Variant == "so", "so", "other"),
+         Variant = factor(Variant)) %>%
+  droplevels()
+# inspect
+head(phi_so)
+```
+
+Find variables that cannot be tested
+
+```{r amphkpie_02_133, echo=T, eval = T, message=TRUE, warning=TRUE}
+l <- sapply(phi_so, function(x) is.factor(x))
+m <- phi_so[, l]
+ifelse(n <- sapply(m, function(x) length(levels(x))) == 1, "DROP", "NODROP")
+```
+
+Remove variables and NA
+
+```{r amphkpie_02_135, echo=T, eval = T, message=TRUE, warning=TRUE}
+nrow(phi_so)
+phi_so <- phi_so %>%
+  select(-Corpus, -EducationLevel, -Ethnicity) %>%
+  na.omit()
+nrow(phi_so)
+```
+
+## Regression analysis{-}
+
+Prepare data
+
+```{r amphkpie_02_137, echo=T, eval = T, message=TRUE, warning=TRUE}
+library(rms)
+library(lme4)
+# set options
+options(contrasts  =c("contr.treatment", "contr.poly"))
+phi_so.dist <- datadist(phi_so)
+options(datadist = "phi_so.dist")
+# generate models
+m0.glmer = glmer(Variant ~ 1 + (1|Speaker), 
+                 data = phi_so, family = "binomial",
+                 control=glmerControl(optimizer="bobyqa"))
+# extract aics
+aic.m0.glmer <- AIC(logLik(m0.glmer))
+aic.m0.glmer
+```
+
+### Model fitting{-}
+
+Age
+
+```{r amphkpie_02_139, echo=T, eval = T, message=TRUE, warning=TRUE}
+m1.glmer <- update(m0.glmer, .~.+Age)
+anova(m1.glmer, m0.glmer, test = "Chi")       
+library(car)
+Anova(m1.glmer, type = "III", test = "Chi")   
+```
+
+Gender
+
+```{r amphkpie_02_141, echo=T, eval = T, message=TRUE, warning=TRUE}
+m2.glmer <- update(m1.glmer, .~.+ Gender)
+car::vif(m2.glmer)
+anova(m2.glmer, m1.glmer, test = "Chi")       
+Anova(m2.glmer, type = "III", test = "Chi")   
+```
+
+Function
+
+```{r amphkpie_02_143, echo=T, eval = T, message=TRUE, warning=TRUE}
+m3.glmer <- update(m2.glmer, .~.+ Function)
+car::vif(m3.glmer)
+anova(m3.glmer, m1.glmer, test = "Chi")       
+Anova(m3.glmer, type = "III", test = "Chi")   
+```
+
+Date
+
+```{r amphkpie_02_145, echo=T, eval = T, message=TRUE, warning=TRUE}
+m4.glmer <- update(m2.glmer, .~.+ Date)
+car::vif(m4.glmer)
+anova(m4.glmer, m2.glmer, test = "Chi")
+Anova(m4.glmer, type = "III", test = "Chi")  
+```
+
+Frequency
+
+```{r amphkpie_02_147, echo=T, eval = T, message=TRUE, warning=TRUE}
+m5.glmer <- update(m4.glmer, .~.+ Frequency)
+car::vif(m5.glmer)
+anova(m5.glmer, m4.glmer, test = "Chi")   
+```
+
+Priming
+
+```{r amphkpie_02_149, echo=T, eval = T, message=TRUE, warning=TRUE}
+m6.glmer <- update(m4.glmer, .~.+ Priming)
+car::vif(m6.glmer)
+anova(m6.glmer, m4.glmer, test = "Chi")
+Anova(m6.glmer, type = "III", test = "Chi")
+```
+
+Gradability
+
+```{r amphkpie_02_151, echo=T, eval = T, message=TRUE, warning=TRUE}
+m7.glmer <- update(m6.glmer, .~.+ Gradability)
+car::vif(m7.glmer)
+anova(m7.glmer, m6.glmer, test = "Chi") 
+Anova(m7.glmer, type = "III", test = "Chi")
+```
+
+SemanticCategory
+
+```{r amphkpie_02_153, echo=T, eval = T, message=TRUE, warning=TRUE}
+m8.glmer <- update(m6.glmer, .~.+ SemanticCategory)
+car::vif(m8.glmer)
+anova(m8.glmer, m1.glmer, test = "Chi")  
+Anova(m8.glmer, type = "III", test = "Chi")
+```
+
+Emotionality
+
+```{r amphkpie_02_155, echo=T, eval = T, message=TRUE, warning=TRUE}
+m9.glmer <- update(m6.glmer, .~.+ Emotionality)
+car::vif(m9.glmer)
+anova(m9.glmer, m6.glmer, test = "Chi") 
+Anova(m9.glmer, type = "III", test = "Chi")
+```
+
+Adjective
+
+```{r amphkpie_02_157, echo=T, eval = T, message=TRUE, warning=TRUE}
+m10.glmer <- update(m9.glmer, .~.+ Adjective)
+car::vif(m10.glmer)
+anova(m10.glmer, m9.glmer, test = "Chi") 
+Anova(m10.glmer, type = "III", test = "Chi")
+```
+
+
+2-way interaction
+
+Extract predictors
+
+```{r amphkpie_02_159, echo=T, eval = T, message=TRUE, warning=TRUE}
+# define variables included in interactions
+vars <- c("Age" , "Gender", "Function", "Date", "Frequency", "Priming", 
+          "Gradability", "SemanticCategory", "Emotionality", "Adjective")
+# 3-way interactions (involving Variant)
+intac_2way <- t(combn(vars, 2))
+int2w <- paste(intac_2way[,1], intac_2way[,2], sep = "*")
+#int2w
+
+# check which 2-way interactions can be included
+check_models <- function(int2w) {
+  rslt <- sapply(int2w, function(x){
+  frml <- formula(paste0("Variant ~  (1|Speaker) +  Age + Gender + Date + Priming + Emotionality + ", x))
+  modl <- glmer(frml, data = phi_so, family = "binomial", control=glmerControl(optimizer="bobyqa"))
+  report <- if(max(as.vector(unlist(car::vif(modl)[,1]))) <= 10 & as.vector(unlist(anova(modl, m9.glmer, test = "Chi")[8]))[2] <= 0.1){
+    print(anova(modl, m9.glmer, test = "Chi"))
+  } else {cat("Predictor not significant or vifs too high!\n")}
+  return(report)
+})
+  return(rslt)
+}
+# inspect
+#possible_models <- check_models(int2w)
+```
+
+Select interaction with next lowest AIC: Gender*Date
+
+```{r amphkpie_02_167, echo=T, eval = T, message=TRUE, warning=TRUE}
+m11.glmer <- update(m9.glmer, .~.+ Gender*Date)
+car::vif(m11.glmer)
+anova(m11.glmer, m9.glmer, test = "Chi")  
+Anova(m11.glmer, type = "III", test = "Chi")
+```
+
+
+Rerun check
+
+```{r amphkpie_02_169, echo=T, eval = T, message=TRUE, warning=TRUE}
+# check which 2-way interactions can be included
+check_models <- function(int2w) {
+  rslt <- sapply(int2w, function(x){
+  frml <- formula(paste0("Variant ~  (1|Speaker) +  Age + Gender + Date + Priming + Emotionality +  Gender:Date + ", x))
+  modl <- glmer(frml, data = phi_so, family = "binomial", control=glmerControl(optimizer="bobyqa"))
+  report <- if(max(as.vector(unlist(car::vif(modl)[,1]))) <= 10 & as.vector(unlist(anova(modl, m11.glmer, test = "Chi")[8]))[2] <= 0.1){
+    print(anova(modl, m11.glmer, test = "Chi"))
+  } else {cat("Predictor not significant or vifs too high!\n")}
+  return(report)
+})
+  return(rslt)
+}
+# inspect
+#possible_models <- check_models(int2w)
+```
+
+Test 3-way interactions
+
+```{r amphkpie_02_175, echo=T, eval = T, message=TRUE, warning=TRUE}
+# find all 3-way interactions
+library(utils)
+#colnames(pphi)
+# define variables included in interactions
+vars <- c("Age" , "Gender", "Function", "Date", "Frequency", "Priming", 
+          "Gradability", "SemanticCategory", "Emotionality")
+# 3-way interactions (involving Variant)
+intac_3way <- t(combn(vars, 3))
+int3w <- paste(intac_3way[,1], intac_3way[,2], intac_3way[,3], sep = "*")
+# inspect
+#int3w
+
+# check which 3-way interactions can be included
+possible_models <- check_models(int3w)
+```
+
+
+
+All 3-way interactions too high
+
+Compare final minimal adequate model to intercept-only base-line model
+
+```{r amphkpie_02_179, echo=T, eval = T, message=TRUE, warning=TRUE}
+mf.glmer <- m11.glmer
+mf.so <- m11.glmer
+# compare models                
+anova(mf.glmer, m0.glmer, test = "Chi")
+Anova(mf.glmer, type = "III", test = "Chi")
+```
+
+### Tabulate regression results{-}
+
+```{r amphkpie_02_181, echo=T, eval = T, message=TRUE, warning=TRUE}
+library(sjPlot)
+tab_model(mf.glmer)
+```
+
+Extract effects
+
+```{r amphkpie_02_183, echo=T, eval = T, message=TRUE, warning=TRUE}
+library(ggeffects)
+effectsdf <- ggeffect(mf.glmer)
+# inspect effects
+effectsdf
+```
+
+### Visualize effects{-}
+
+Plot effects
+ 
+```{r amphkpie_02_185, echo=T, eval = T, message=TRUE, warning=TRUE}
+library(effects)
+png(here::here("images", "effectsfinalmodel_phi_so.png"),  width = 960, height = 480) 
+plot(allEffects(mf.glmer), type="response", ylim=c(0,1), grid=TRUE, 
+     lines = list(col="black", lty = 1, confint=list(style="bars", col = "grey80")), ylab = "Probability")
+dev.off()
+plot(allEffects(mf.glmer), type="response", ylim=c(0,1), grid=TRUE, 
+     lines = list(col="black", lty = 1, confint=list(style="bars", col = "grey80")), ylab = "Probability")
+```
+
+### Visualize individual effects{-}
+
+Custom plot
+
+```{r amphkpie_02_187, echo=T, eval = T, message=TRUE, warning=TRUE}
+library(gridExtra)
+p1 <- plot_model(mf.glmer, type = "pred", terms = c("Age"))
+p2 <- plot_model(mf.glmer, type = "pred", terms = c("Priming"))
+p3 <- plot_model(mf.glmer, type = "pred", terms = c("Emotionality"))
+p4 <- plot_model(mf.glmer, type = "pred", terms = c("Gender", "Date"))
+grid.arrange(grobs = list(p1, p2, p3, p4), widths = c(1, 1), layout_matrix = rbind(c(1, 2), c(3, 4)))
+```
+
+Publishable plots
+
+Age
+
+```{r amphkpie_02_189, echo=T, eval = T, message=TRUE, warning=TRUE}
+phi_so$Probability <- predict(mf.glmer, phi_so, type = "response")
+ggplot(phi_so, aes(Age, Probability)) +
+  stat_summary(fun.y = mean, geom = "point", size = 1.5, color = "gray20") +
+  stat_summary(fun.data = mean_cl_boot, geom = "errorbar", 
+               width = 0.2, size = .5, color = "gray20") +
+  coord_cartesian(ylim = c(-.1, 1)) +
+  theme_set(theme_bw(base_size = 12)) +
+  theme(legend.position="top",
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(), 
+        axis.text.x = element_text(size=10)) +
+  labs(x = "Age", y = "Predicted probability") +
+  scale_x_discrete(limits = rev(levels(phi_so$Age))) 
+ggsave(here::here("images", "Pred_Age_phi_so.png"),
+       height = 5,  width = 6, dpi = 320)
+```
+
+```{r amphkpie_02_191, echo=T, eval = T, message=TRUE, warning=TRUE}
+ggplot(phi_so, aes(Priming, Probability)) +
+  stat_summary(fun.y = mean, geom = "point", size = 1.5, color = "gray20") +
+  stat_summary(fun.data = mean_cl_boot, geom = "errorbar", 
+               width = 0.2, size = .5, color = "gray20") +
+  coord_cartesian(ylim = c(-.1, 1)) +
+  theme_set(theme_bw(base_size = 12)) +
+  theme(legend.position="top",
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(), 
+        axis.text.x = element_text(size=10)) +
+  labs(x = "Priming", y = "Predicted probability")
+ggsave(here::here("images", "Pred_Priming_phi_so.png"),
+       height = 5,  width = 6, dpi = 320)
+```
+
+
+```{r amphkpie_02_193, echo=T, eval = T, message=TRUE, warning=TRUE}
+ggplot(phi_so, aes(Emotionality, Probability)) +
+  stat_summary(fun.y = mean, geom = "point", size = 1.5) +
+  stat_summary(fun.data = mean_cl_boot, geom = "errorbar", 
+               width = 0.2, size = .5) +
+  coord_cartesian(ylim = c(-.1, 1)) +
+  theme_set(theme_bw(base_size = 12)) +
+  theme(legend.position="top",
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(), 
+        axis.text.x = element_text(size=10)) +
+  labs(x = "Emotionality", y = "Predicted probability") +
+  ggsave("D:\\Uni\\Projekte\\02-Intensification\\AmpHKPIE\\images/Pred_Emotionality_phi_so.png",
+       height = 5,  width = 6, dpi = 320)
+```
+
+```{r amphkpie_02_195, echo=T, eval = T, message=TRUE, warning=TRUE}
+ggplot(phi_so, aes(Date, Probability, group = Gender, color = Gender)) +
+  stat_summary(fun.y = mean, geom = "point", size = 1.5) +
+  stat_summary(fun.data = mean_cl_boot, geom = "errorbar", 
+               width = 0.2, size = .5) +
+  coord_cartesian(ylim = c(-.1, 1)) +
+  theme_set(theme_bw(base_size = 12)) +
+  theme(legend.position="top",
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(), 
+        axis.text.x = element_text(size=10)) +
+  labs(x = "Date", y = "Predicted probability") +
+  scale_color_manual(breaks = c("female", "male"),
+                     values = c("gray30", "gray70"))
+ggsave(here::here("images", "Pred_Date_Gender_phi_so.png"),
+       height = 5,  width = 6, dpi = 320)
+```
+
+
+### Visualize random effects
+
+```{r amphkpie_02_197, echo=T, eval = T, message=TRUE, warning=TRUE}
+randomtb <- ranef(mf.glmer)$Speaker
+rndmlngtb <- data.frame(rownames(randomtb), randomtb)
+colnames(rndmlngtb) <- c("Speaker", "Intercept")
+rndmlngtb <- rndmlngtb[order(rndmlngtb$Intercept, decreasing = T),]
+summary(rndmlngtb$Intercept)
+```
+
+Publishable plot
+
+```{r amphkpie_02_199, echo=T, eval = T, message=TRUE, warning=TRUE}
+ggplot(rndmlngtb, aes(Speaker, Intercept)) +
+  geom_point(aes(reorder(Speaker, -Intercept, fun = Intercept), y=Intercept)) +
+  coord_cartesian(ylim = c(-1, 2)) +
+  theme_set(theme_bw(base_size = 12)) +
+  theme(legend.position="none",
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(), 
+        axis.text.x = element_text(size=5, angle=90)) +
+  labs(x = "Speaker", y = "Adjustment to Intercept") 
+ggsave(here::here("images", "Pred_Speaker_phi_so.png"),
+       height = 4,  width = 5, dpi = 320)
+```
+
+## Power analysis{-}
+
+```{r amphkpie_02_201, echo=T, eval = T, message=TRUE, warning=TRUE}
+# load package
+library(simr)
+# rename model
+gm1 <- mf.glmer
+estimatesfixedeffects <- fixef(mf.glmer)
+exp(estimatesfixedeffects)
+```
+
+Change effect size of Variant[so] to make it "medium" (odds ratio = 3.47 or Cohen's d of .5, estimate = 1.245)
+
+```{r amphkpie_02_203, echo=T, eval = T, message=TRUE, warning=TRUE}
+fixef(gm1)["PrimingPrimed"] <- 1.245
+estimatesfixedeffects <- fixef(gm1)
+exp(estimatesfixedeffects)
+```
+
+Percent accuracy of the model to detect a medium effect with a likelihood higher than 80 percent.
+
+```{r amphkpie_02_205, echo=T, eval = T, message=TRUE, warning=TRUE}
+# set seed for replicability
+set.seed(2020011405)
+powerSim(gm1, fixed("PrimingPrimed", "z"), nsim=100)
+```
+
+# Combine models
+
+We now use the different models to predict the likelihood of very, really, and so and visualize the results in a single data set
+
+```{r amphkpie_02_207, echo=T, eval = T, message=TRUE, warning=TRUE}
+combined <- phi_very %>%
+  mutate(Predicted_very = predict(mf.very, phi_very, type = "response"),
+         Predicted_really = predict(mf.really, phi_very, type = "response"),
+         Predicted_so = predict(mf.so, phi_very, type = "response")) %>%
+  tidyr::gather(PredictedVariant, PredictedProbability, Predicted_very:Predicted_so) %>%
+  mutate(PredictedVariant = str_remove_all(PredictedVariant, ".*_")) %>%
+  select(-Probability)
+# inspect
+head(combined)
+```
+
+
+```{r amphkpie_02_209, echo=T, eval = T, message=TRUE, warning=TRUE}
+combined %>%
+  ggplot(aes(Age, PredictedProbability, group = PredictedVariant, color = PredictedVariant)) +
+  stat_summary(fun.y = mean, geom = "point", size = 1.5) +
+  stat_summary(fun.y = mean, geom = "line") +
+  stat_summary(fun.data = mean_cl_boot, geom = "errorbar", width = 0.2, size = .5) +
+  scale_x_discrete(limits = rev(levels(phi_very$Age))) +
+  coord_cartesian(ylim = c(-.1, 1)) +
+  theme_set(theme_bw(base_size = 12)) +
+  theme(legend.position="top",
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(), 
+        axis.text.x = element_text(size=10)) +
+  labs(x = "Variant", y = "Predicted probability") +
+    scale_color_manual(breaks = c("really", "so", "very"),
+                     values = c("gray20", "gray50", "gray80"))
+ggsave(here::here("images", "Pred_Age_phi_Variants.png"),
+       height = 5,  width = 6, dpi = 320)
+```
+
+
+```{r amphkpie_02_211, echo=T, eval = T, message=TRUE, warning=TRUE}
+tab_model(mf.really, mf.so, mf.very)
+```
+
+
+# Wrap up
+
+Extract session information
+
+```{r amphkpie_02_213, echo=T, eval = T, message=TRUE, warning=TRUE}
+sessionInfo()
+``` 
+
+=========================THE END=========================

@@ -1,0 +1,1181 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% PREAMBLE
+\documentclass[12pt, table]{beamer}
+\usepackage{graphicx}
+\usepackage[utf8]{inputenc}
+\graphicspath{{images/}}
+\usepackage{rotating}
+\usepackage{array}
+\usepackage{wasysym}
+\usepackage{csquotes}
+\usepackage[tone,extra]{tipa}
+\usepackage{tabularx}
+\usepackage{multirow}
+\usepackage{qtree}
+\usepackage[normalem]{ulem}
+\usepackage{adjustbox} % to make figues and tables fit the boxes
+\usepackage{xcolor}
+\usepackage{float}
+%\usepackage{multimedia}
+\usepackage{enumerate}
+\usepackage{lmodern}
+\usepackage{eurosym}
+\usepackage{amssymb}% http://ctan.org/pkg/amssymb
+\usepackage{pifont}% http://ctan.org/pkg/pifont
+\newcommand{\cmark}{\ding{51}}%
+\newcommand{\xmark}{\ding{55}}%
+\usecolortheme[named=black]{structure}
+\usepackage[english]{babel}
+\usepackage[T1]{fontenc}
+\usepackage[absolute,overlay]{textpos} % for logo in header 
+\usepackage{chngcntr}
+\usepackage[round]{natbib} % define bibliography style
+\bibpunct{(}{)}{;}{a}{}{,}
+\setcitestyle{notesep={: }} % replace comma with colon in citations
+\usepackage{cite}
+\usepackage{textpos}
+\usepackage{caption}
+%\usepackage{graphicx}
+%\usepackage{movie15}
+\usepackage{animate}
+
+\captionsetup{font=scriptsize,labelfont=scriptsize}
+\definecolor{uq}{RGB}{81, 36, 122}
+\usepackage{gb4e} % for examples
+\setbeamertemplate{caption}[numbered]
+\newcolumntype{Y}{>{\centering\arraybackslash}X}
+\newcommand{\myipa}[1]{{\shorthandoff{"}\scantokens{\tipaencoding#1\endinput}}}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% define footline
+\setbeamertemplate{footline}{
+\begin{beamercolorbox}[ht=4ex,leftskip=0.4cm,rightskip=.4cm]{author in head/foot}
+\hrule
+\vspace{0.1cm}
+\hfill \newline
+\insertauthor 
+\hfill \insertframenumber
+\vspace{0.2cm}
+\end{beamercolorbox}
+\vspace*{0.1cm}
+} 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% define headline
+\setbeamertemplate{headline}
+{
+\leavevmode%
+\hbox{%
+\begin{beamercolorbox}[wd=.8\paperwidth, ht=0.6cm, dp=0.2cm, left, rightskip=.2cm]{section in head/foot}%
+\usebeamerfont{subsection in head/foot} \hspace*{.1cm}
+\begin{minipage}[t]{.95\textwidth}
+{
+\includegraphics[height=0.4cm]{D:/Uni/Projekte/02-Intensification/AmpHKPIE/pub/jaecs/ppt/images/uqlogo.png}
+\hfill 
+\textsc{\textcolor{uq}{Adjective Amplification in ICE-HK, ICE-IND, and ICE-PHI}}}
+\hfill
+\textsc{\textcolor{uq}{\insertsectionhead}}
+\hfill
+\end{minipage}
+\end{beamercolorbox}}%
+\hrule
+\vskip0pt%
+}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% START
+\author{\color{uq}{\textsc{Dr. Martin Schweinberger \\
+slides available at\\
+\texttt{www.martinschweinberger.de}\\
+\texttt{m.schweinberger@uq.edu.au}\\
+\texttt{R} code upon request}}}
+\title{\textsc{A corpus-based analysis of ongoing change in the adjective amplifier systems of Hong Kong, Indian, and Philippine English}\\}
+
+\date{\includegraphics[height=1cm]{D:/Uni/Projekte/02-Intensification/AmpHKPIE/pub/jaecs/ppt/images/uqlogo.png}\hfill
+\includegraphics[height=1cm]{D:/Uni/Projekte/02-Intensification/AmpHKPIE/pub/jaecs/ppt/images/jaecs2020.png}}
+\begin{document}
+\begin{frame}[plain]
+\titlepage 
+\end{frame}
+
+\section{Introduction}
+
+\begin{frame}
+\frametitle{Phenomenon: Adjective Amplification}
+Predicative
+\begin{exe}
+\ex \textcolor{gray}{I think he 's} \textcolor{uq}{really} nice \textcolor{gray}{\begin{scriptsize}(ICE-PHI:S1A-083\#222:1:C)\end{scriptsize}}
+\ex \textcolor{gray}{It 's} \textcolor{uq}{so} bad \textcolor{gray}{\begin{scriptsize}(ICE-PHI:S1A-013\#204:1:A)\end{scriptsize}}
+\end{exe}
+Attributive
+\begin{exe}
+\ex \textcolor{gray}{It is a} \textcolor{uq}{very} good \textcolor{gray}{training \begin{scriptsize}(ICE-HK:S1A-022\#433:1:A)\end{scriptsize}}
+\ex \textcolor{gray}{But it's} \textcolor{uq}{completely} different \textcolor{gray}{\begin{scriptsize}(ICE-IND:S1A-073\#48:1:A)\end{scriptsize}}
+\end{exe}
+\end{frame}
+
+%\begin{frame}
+%\textsc{
+%\tableofcontents
+%}
+%\end{frame}
+
+
+\begin{frame}
+\frametitle{Intensification}
+Related to the semantic category of \textit{degree} (degree adverbs) and ranges from low (downtoning) to high (amplifiers) \\
+\begin{scriptsize}
+\textcolor{gray}{\citep[589--590]{quirk1985comprehensive}}
+\end{scriptsize}
+\begin{itemize}
+\item[-] Amplifiers
+\begin{itemize}
+\item[-] Boosters, e.g. \textit{very}
+\item[-] Maximizers, e.g. \textit{completely}
+\end{itemize}
+\item[-] \textcolor{gray}{Downtoners}
+\begin{itemize}
+\item[-] \textcolor{gray}{Approximators, e.g. \textit{almost}}
+\item[-] \textcolor{gray}{Compromisers, e.g. \textit{more or less}}
+\item[-] \textcolor{gray}{Diminishers, e.g. \textit{partly}}
+\item[-] \textcolor{gray}{Minimizers, e.g. \textit{hardly}}
+\end{itemize} 
+\end{itemize}
+%\textit{very} vs. \textit{really}: no meaning change $\rightarrow$ interchangeable, \textit{very} vs. \textit{hardly}: meaning change $\rightarrow$ not interchangeable
+\end{frame}
+
+\begin{frame}
+\frametitle{Motivation}
+Amplification
+\begin{itemize}
+\item[-] major area of gramm. change \textcolor{gray}{\begin{scriptsize}\citep[cf.][441]{brinton2006englishlanguage}\end{scriptsize}}
+\item[-] crucial for \textquote{social and emotional expression of speakers} \textcolor{gray}{\begin{scriptsize}\citep[258]{ito2003well}\end{scriptsize}}
+\item[-] linguistic subsystem which allows precise circumscription of a variable context \textcolor{gray}{\begin{scriptsize}\citep[49]{labov1972sociolinguistic, labov1966social}\end{scriptsize}}
+\item[-] ideal case for testing mechanisms underlying language change!
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Previous Research}
+Amplification
+\begin{itemize}
+\item[-] substantial amount of corpus-based research on intensification \textcolor{gray}{\begin{scriptsize}\citep[e.g][]{aijmer2011totally, aijmer2018well, fuchs2016register, fuchs2017women, nunez2014absolutely,palacios2012absolutely}\end{scriptsize}} \\
+$\rightarrow$ but mostly either focused on individual intensifiers or without regard to the intensified adjectives
+\item[-] recently amplifier-adjective bigrams have come more into focus \textcolor{gray}{\begin{scriptsize}\citep[e.g.][]{schweinberger2017adjectiveintensifiers, wagner2017icame, wagner2017totally}
+\end{scriptsize}} 
+\item[-] associated with teenage talk and young(ish) (female) speakers \\\textcolor{gray}{\begin{scriptsize}\citep{bauer2002adjective, darcy2015stability, macaulay2006pure, tagliamonte2006so, tagliamonte2008intensifiers}\end{scriptsize}}
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Focus}
+\begin{itemize}
+\item[-] Amplifying \textit{really} replaces \textit{very} (lexical replacement)\\
+\textcolor{gray}{\begin{scriptsize} (see \citet{darcy2015stability} for NZE; see \citet[][]{ito2003well} and \citet[][]{barnfield2010intensifiers} for North East British English, \citet{tagliamonte2008intensifiers} and \citet[][]{tagliamonte2014expanding} for Toronto English; see \citet[][]{tagliamonte2014expanding} for South Eastern Ontario English)\end{scriptsize}} 
+\end{itemize}
+\begin{center}
+\begin{figure}
+\includegraphics[height=3.5cm]{images/DarcyRealTime.png}
+\caption{Amplifier variants in NZE across real-time (from \citet[468]{darcy2015stability})}
+\end{figure}
+\end{center}
+\end{frame}
+
+\section{Theoretical Background}
+\begin{frame}
+\begin{center}
+\textsc{\textcolor{uq}{Theoretical Background}}
+\end{center}
+\end{frame}
+
+\begin{frame}
+\frametitle{Variationist Sociolinguistics}
+Language is not homogeneous: variation is ubiquitous \textcolor{gray}{\begin{scriptsize} (see e.g. \citet{labov1994principles} \citet{labov2001principles} \citet{labov2011principles} \citet{tagliamonte2011variationist} \end{scriptsize}})
+\begin{itemize}
+\item  Social factors : language use
+\item  Linguistic variation not random
+\item  Systematic correlation between certain social factors (age, gender, class, ethnicity, etc.) and language use
+\end{itemize}
+Linguistic differentiation $\leftrightarrow$ social stratification
+\end{frame}
+
+\begin{frame}
+\frametitle{Diffusion of Innovations}
+\begin{minipage}[t]{\linewidth}
+\begin{minipage}{.45\linewidth}
+\begin{tabular}{cccccccccc }
+& \multicolumn{9}{c}{young $\longleftrightarrow$ old} \\ 
+\multirow{3}{*} {\rotatebox[origin=c]{90}{upper}}	 
+ & & & & & & & & & \\
+& & & & & & & & & \\
+& & & & & & & & & \\
+\multirow{3}{*} {\rotatebox[origin=c]{90}{$\longleftrightarrow$} }
+& & & & & & & & \\
+& \cellcolor{uq!10} & & & & & & \\
+& & & & & & & & & \\
+\multirow{3}{*} {\rotatebox[origin=c]{90}{working}} 
+& & & & & & & & & \\
+& & & & & & & & & \\
+& & & & & & & & & \\
+\end{tabular}
+\end{minipage}
+\hfill
+\begin{minipage}{.45\linewidth}
+\begin{figure}
+\includegraphics[width=5cm]{images/LangChang01.png}
+\end{figure}
+\end{minipage}
+\end{minipage}
+\end{frame}
+
+\begin{frame}
+\frametitle{Diffusion of Innovations}
+\begin{minipage}[t]{\linewidth}
+\begin{minipage}{.45\linewidth}
+\begin{tabular}{cccccccccc }
+& \multicolumn{9}{c}{young $\longleftrightarrow$ old} \\ 
+\multirow{3}{*} {\rotatebox[origin=c]{90}{upper}}	 
+ & & & & & & & & & \\
+& & & & & & & & & \\
+& & & & & & & & & \\
+\multirow{3}{*} {\rotatebox[origin=c]{90}{$\longleftrightarrow$} }
+& \cellcolor{uq!10} & & & & & & & \\
+& \cellcolor{uq!20} & \cellcolor{uq!10} & & & & & \\
+& \cellcolor{uq!10} & & & & & & & & \\
+\multirow{3}{*} {\rotatebox[origin=c]{90}{working}} 
+& & & & & & & & & \\
+& & & & & & & & & \\
+& & & & & & & & & \\
+\end{tabular}
+\end{minipage}
+\hfill
+\begin{minipage}{.45\linewidth}
+\begin{figure}
+\includegraphics[width=5cm]{images/LangChang02.png}
+\end{figure}
+\end{minipage}
+\end{minipage}
+\end{frame}
+
+\begin{frame}
+\frametitle{Diffusion of Innovations}
+\begin{minipage}[t]{\linewidth}
+\begin{minipage}{.45\linewidth}
+\begin{tabular}{cccccccccc }
+& \multicolumn{9}{c}{young $\longleftrightarrow$ old} \\ 
+\multirow{3}{*} {\rotatebox[origin=c]{90}{upper}}	 
+ & & & & & & & & & \\
+& & & & & & & & & \\
+& \cellcolor{uq!10} & & & & & & & & \\
+\multirow{3}{*} {\rotatebox[origin=c]{90}{$\longleftrightarrow$} }
+& \cellcolor{uq!20} & \cellcolor{uq!10} & & & & & & \\
+& \cellcolor{uq!30} & \cellcolor{uq!20} & \cellcolor{uq!10} & & & & \\
+& \cellcolor{uq!20} & \cellcolor{uq!10} & & & & & & & \\
+\multirow{3}{*} {\rotatebox[origin=c]{90}{working}} 
+& \cellcolor{uq!10} & & & & & & & & \\
+& & & & & & & & & \\
+& & & & & & & & & \\
+\end{tabular}
+\end{minipage}
+\hfill
+\begin{minipage}{.45\linewidth}
+\begin{figure}
+\includegraphics[width=5cm]{images/LangChang03.png}
+\end{figure}
+\end{minipage}
+\end{minipage}
+\end{frame}
+
+\begin{frame}
+\frametitle{Diffusion of Innovations}
+\begin{minipage}[t]{\linewidth}
+\begin{minipage}{.45\linewidth}
+\begin{tabular}{cccccccccc }
+& \multicolumn{9}{c}{young $\longleftrightarrow$ old} \\ 
+\multirow{3}{*} {\rotatebox[origin=c]{90}{upper}}	 
+ & & & & & & & & & \\
+& \cellcolor{uq!10} & & & & & & & & \\
+& \cellcolor{uq!20} & \cellcolor{uq!10} & & & & & & & \\
+\multirow{3}{*} {\rotatebox[origin=c]{90}{$\longleftrightarrow$} }
+& \cellcolor{uq!30} & \cellcolor{uq!20} & \cellcolor{uq!10} & & & & & \\
+& \cellcolor{uq!40} & \cellcolor{uq!30} & \cellcolor{uq!20} & \cellcolor{uq!10} & & & \\
+& \cellcolor{uq!30} & \cellcolor{uq!20} & \cellcolor{uq!10} & & & & & & \\
+\multirow{3}{*} {\rotatebox[origin=c]{90}{working}} 
+& \cellcolor{uq!20} & \cellcolor{uq!10} & & & & & & & \\
+& \cellcolor{uq!10} & & & & & & & & \\
+& & & & & & & & & \\
+\end{tabular}
+\end{minipage}
+\hfill
+\begin{minipage}{.45\linewidth}
+\begin{figure}
+\includegraphics[width=5cm]{images/LangChang04.png}
+\end{figure}
+\end{minipage}
+\end{minipage}
+\end{frame}
+
+\begin{frame}
+\frametitle{Diffusion of Innovations}
+\begin{minipage}[t]{\linewidth}
+\begin{minipage}{.45\linewidth}
+\begin{tabular}{cccccccccc }
+& \multicolumn{9}{c}{young $\longleftrightarrow$ old} \\ 
+\multirow{3}{*} {\rotatebox[origin=c]{90}{upper}}	 
+& \cellcolor{uq!10} & & & & & & & & \\
+& \cellcolor{uq!20} & \cellcolor{uq!10} & & & & & & & \\
+& \cellcolor{uq!30} & \cellcolor{uq!20} & \cellcolor{uq!10} & & & & & & \\
+\multirow{3}{*} {\rotatebox[origin=c]{90}{$\longleftrightarrow$} }
+& \cellcolor{uq!40} & \cellcolor{uq!30} & \cellcolor{uq!20} & \cellcolor{uq!10} & & & & \\
+& \cellcolor{uq!50} & \cellcolor{uq!40} & \cellcolor{uq!30} & \cellcolor{uq!20} & \cellcolor{uq!10} & & \\
+& \cellcolor{uq!40} & \cellcolor{uq!30} & \cellcolor{uq!20} & \cellcolor{uq!10} & & & & & \\
+\multirow{3}{*} {\rotatebox[origin=c]{90}{working}} 
+& \cellcolor{uq!30} & \cellcolor{uq!20} & \cellcolor{uq!10} & & & & & & \\
+& \cellcolor{uq!20} & \cellcolor{uq!10} & & & & & & & \\
+& \cellcolor{uq!10} & & & & & & & & \\
+\end{tabular}
+\end{minipage}
+\hfill
+\begin{minipage}{.45\linewidth}
+\begin{figure}
+\includegraphics[width=5cm]{images/LangChang05.png}
+\end{figure}
+\end{minipage}
+\end{minipage}
+\end{frame}
+
+\begin{frame}
+\frametitle{Diffusion of Innovations}
+\begin{minipage}[t]{\linewidth}
+\begin{minipage}{.45\linewidth}
+\begin{tabular}{cccccccccc }
+& \multicolumn{9}{c}{young $\longleftrightarrow$ old} \\ 
+\multirow{3}{*} {\rotatebox[origin=c]{90}{upper}}	 
+& \cellcolor{uq!20} & \cellcolor{uq!10} & & & & & & & \\
+& \cellcolor{uq!30} & \cellcolor{uq!20} & \cellcolor{uq!10} & & & & & & \\
+& \cellcolor{uq!40} & \cellcolor{uq!30} & \cellcolor{uq!20} & \cellcolor{uq!10} & & & & & \\
+\multirow{3}{*} {\rotatebox[origin=c]{90}{$\longleftrightarrow$} }
+& \cellcolor{uq!50} & \cellcolor{uq!40} & \cellcolor{uq!30} & \cellcolor{uq!20} & \cellcolor{uq!10} & & & \\
+& \cellcolor{uq!60} & \cellcolor{uq!50} & \cellcolor{uq!40} & \cellcolor{uq!30} & \cellcolor{uq!20} & \cellcolor{uq!10} & \\
+& \cellcolor{uq!50} & \cellcolor{uq!40} & \cellcolor{uq!30} & \cellcolor{uq!20} & \cellcolor{uq!10} & & & & \\
+\multirow{3}{*} {\rotatebox[origin=c]{90}{working}} 
+& \cellcolor{uq!40} & \cellcolor{uq!30} & \cellcolor{uq!20} & \cellcolor{uq!10} & & & & & \\
+& \cellcolor{uq!30} & \cellcolor{uq!20} & \cellcolor{uq!10} & & & & & & \\
+& \cellcolor{uq!20} & \cellcolor{uq!10} & & & & & & & \\
+\end{tabular}
+\end{minipage}
+\hfill
+\begin{minipage}{.45\linewidth}
+\begin{figure}
+\includegraphics[width=5cm]{images/LangChang06.png}
+\end{figure}
+\end{minipage}
+\end{minipage}
+\end{frame}
+
+\begin{frame}
+\frametitle{Diffusion of Innovations}
+\begin{minipage}[t]{\linewidth}
+\begin{minipage}{.45\linewidth}
+\begin{tabular}{cccccccccc }
+& \multicolumn{9}{c}{young $\longleftrightarrow$ old} \\ 
+\multirow{3}{*} {\rotatebox[origin=c]{90}{upper}}	 
+& \cellcolor{uq!30} & \cellcolor{uq!20} & \cellcolor{uq!10} & & & & & & \\
+& \cellcolor{uq!40} & \cellcolor{uq!30} & \cellcolor{uq!20} & \cellcolor{uq!10} & & & & & \\
+& \cellcolor{uq!50} & \cellcolor{uq!40} & \cellcolor{uq!30} & \cellcolor{uq!20} & \cellcolor{uq!10} & & & & \\
+\multirow{3}{*} {\rotatebox[origin=c]{90}{$\longleftrightarrow$} }
+& \cellcolor{uq!60} & \cellcolor{uq!50} & \cellcolor{uq!40} & \cellcolor{uq!30} & \cellcolor{uq!20} & \cellcolor{uq!10} & & \\
+& \cellcolor{uq!70} & \cellcolor{uq!60} & \cellcolor{uq!50} & \cellcolor{uq!40} & \cellcolor{uq!30} & \cellcolor{uq!20} & \cellcolor{uq!10} \\
+& \cellcolor{uq!60} & \cellcolor{uq!50} & \cellcolor{uq!40} & \cellcolor{uq!30} & \cellcolor{uq!20} & \cellcolor{uq!10} & & & \\
+\multirow{3}{*} {\rotatebox[origin=c]{90}{working}} 
+& \cellcolor{uq!50} & \cellcolor{uq!40} & \cellcolor{uq!30} & \cellcolor{uq!20} & \cellcolor{uq!10} & & & & \\
+& \cellcolor{uq!40} & \cellcolor{uq!30} & \cellcolor{uq!20} & \cellcolor{uq!10} & & & & & \\
+& \cellcolor{uq!30} & \cellcolor{uq!20} & \cellcolor{uq!10} & & & & & & \\
+\end{tabular}
+\end{minipage}
+\hfill
+\begin{minipage}{.45\linewidth}
+\begin{figure}
+\includegraphics[width=5cm]{images/LangChang07.png}
+\end{figure}
+\end{minipage}
+\end{minipage}
+\end{frame}
+
+\begin{frame}
+\frametitle{Diffusion of Innovations}
+\begin{minipage}[t]{\linewidth}
+\begin{minipage}{.45\linewidth}
+\begin{tabular}{cccccccccc }
+& \multicolumn{9}{c}{young $\longleftrightarrow$ old} \\ 
+\multirow{3}{*} {\rotatebox[origin=c]{90}{upper}}	 
+& \cellcolor{uq!40} & \cellcolor{uq!30} & \cellcolor{uq!20} & \cellcolor{uq!10} & & & & & \\
+& \cellcolor{uq!50} & \cellcolor{uq!40} & \cellcolor{uq!30} & \cellcolor{uq!20} & \cellcolor{uq!10} & & & & \\
+& \cellcolor{uq!60} & \cellcolor{uq!50} & \cellcolor{uq!40} & \cellcolor{uq!30} & \cellcolor{uq!20} & \cellcolor{uq!10} & & & \\
+\multirow{3}{*} {\rotatebox[origin=c]{90}{$\longleftrightarrow$} }
+& \cellcolor{uq!70} & \cellcolor{uq!60} & \cellcolor{uq!50} & \cellcolor{uq!40} & \cellcolor{uq!30} & \cellcolor{uq!20} & \cellcolor{uq!10} & \\
+& \cellcolor{uq!80} & \cellcolor{uq!70} & \cellcolor{uq!60} & \cellcolor{uq!50} & \cellcolor{uq!40} & \cellcolor{uq!30} & \cellcolor{uq!20} & \cellcolor{uq!10} \\
+& \cellcolor{uq!70} & \cellcolor{uq!60} & \cellcolor{uq!50} & \cellcolor{uq!40} & \cellcolor{uq!30} & \cellcolor{uq!20} & \cellcolor{uq!10} & & \\
+\multirow{3}{*} {\rotatebox[origin=c]{90}{working}} 
+& \cellcolor{uq!60} & \cellcolor{uq!50} & \cellcolor{uq!40} & \cellcolor{uq!30} & \cellcolor{uq!20} & \cellcolor{uq!10} & & & \\
+& \cellcolor{uq!50} & \cellcolor{uq!40} & \cellcolor{uq!30} & \cellcolor{uq!20} & \cellcolor{uq!10} & & & & \\
+& \cellcolor{uq!40} & \cellcolor{uq!30} & \cellcolor{uq!20} & \cellcolor{uq!10} & & & & & \\
+\end{tabular}
+\end{minipage}
+\hfill
+\begin{minipage}{.45\linewidth}
+\begin{figure}
+\includegraphics[width=5cm]{images/LangChang08.png}
+\end{figure}
+\end{minipage}
+\end{minipage}
+\end{frame}
+
+\begin{frame}
+\frametitle{Diffusion of Innovations}
+\begin{minipage}[t]{\linewidth}
+\begin{minipage}{.45\linewidth}
+\begin{tabular}{cccccccccc }
+& \multicolumn{9}{c}{young $\longleftrightarrow$ old} \\ 
+\multirow{3}{*} {\rotatebox[origin=c]{90}{upper}}	 
+& \cellcolor{uq!50} & \cellcolor{uq!40} & \cellcolor{uq!30} & \cellcolor{uq!20} & \cellcolor{uq!10} & & & & \\
+& \cellcolor{uq!60} & \cellcolor{uq!50} & \cellcolor{uq!40} & \cellcolor{uq!30} & \cellcolor{uq!20} & \cellcolor{uq!10} & & & \\
+& \cellcolor{uq!70} & \cellcolor{uq!60} & \cellcolor{uq!50} & \cellcolor{uq!40} & \cellcolor{uq!30} & \cellcolor{uq!20} & \cellcolor{uq!10} & & \\
+\multirow{3}{*} {\rotatebox[origin=c]{90}{$\longleftrightarrow$} }
+& \cellcolor{uq!80} & \cellcolor{uq!70} & \cellcolor{uq!60} & \cellcolor{uq!50} & \cellcolor{uq!40} & \cellcolor{uq!30} & \cellcolor{uq!20} & \cellcolor{uq!10} \\
+& \cellcolor{uq!90} & \cellcolor{uq!80} & \cellcolor{uq!70} & \cellcolor{uq!60} & \cellcolor{uq!50} & \cellcolor{uq!40} & \cellcolor{uq!30} & \cellcolor{uq!20}& \cellcolor{uq!10}\\
+& \cellcolor{uq!80} & \cellcolor{uq!70} & \cellcolor{uq!60} & \cellcolor{uq!50} & \cellcolor{uq!40} & \cellcolor{uq!30} & \cellcolor{uq!20} & \cellcolor{uq!10} & \\
+\multirow{3}{*} {\rotatebox[origin=c]{90}{working}} 
+& \cellcolor{uq!70} & \cellcolor{uq!60} & \cellcolor{uq!50} & \cellcolor{uq!40} & \cellcolor{uq!30} & \cellcolor{uq!20} & \cellcolor{uq!10} & & \\
+& \cellcolor{uq!60} & \cellcolor{uq!50} & \cellcolor{uq!40} & \cellcolor{uq!30} & \cellcolor{uq!20} & \cellcolor{uq!10} & & & \\
+& \cellcolor{uq!50} & \cellcolor{uq!40} & \cellcolor{uq!30} & \cellcolor{uq!20} & \cellcolor{uq!10} & & & & \\
+\end{tabular}
+\end{minipage}
+\hfill
+\begin{minipage}{.45\linewidth}
+\begin{figure}
+\includegraphics[width=5cm]{images/LangChang09.png}
+\end{figure}
+\end{minipage}
+\end{minipage}
+\end{frame}
+
+\begin{frame}
+\frametitle{Diffusion of Innovations}
+\begin{minipage}[t]{\linewidth}
+\begin{minipage}{.45\linewidth}
+\begin{tabular}{cccccccccc }
+& \multicolumn{9}{c}{young $\longleftrightarrow$ old} \\ 
+\multirow{3}{*} {\rotatebox[origin=c]{90}{upper}}	 
+& \cellcolor{uq!60} & \cellcolor{uq!50} & \cellcolor{uq!40} & \cellcolor{uq!30} & \cellcolor{uq!20} & \cellcolor{uq!10} & & & \\
+& \cellcolor{uq!70} & \cellcolor{uq!60} & \cellcolor{uq!50} & \cellcolor{uq!40} & \cellcolor{uq!30} & \cellcolor{uq!20} & \cellcolor{uq!10} & & \\
+& \cellcolor{uq!80} & \cellcolor{uq!70} & \cellcolor{uq!60} & \cellcolor{uq!50} & \cellcolor{uq!40} & \cellcolor{uq!30} & \cellcolor{uq!20} & \cellcolor{uq!10} & \\
+\multirow{3}{*} {\rotatebox[origin=c]{90}{$\longleftrightarrow$} }
+& \cellcolor{uq!90} & \cellcolor{uq!80} & \cellcolor{uq!70} & \cellcolor{uq!60} & \cellcolor{uq!50} & \cellcolor{uq!40} & \cellcolor{uq!30} & \cellcolor{uq!20} & \cellcolor{uq!10} \\
+& \cellcolor{uq!100} & \cellcolor{uq!90} & \cellcolor{uq!80} & \cellcolor{uq!70} & \cellcolor{uq!60} & \cellcolor{uq!50} & \cellcolor{uq!40} & \cellcolor{uq!30} & \cellcolor{uq!20}\\
+& \cellcolor{uq!90} & \cellcolor{uq!80} & \cellcolor{uq!70} & \cellcolor{uq!60} & \cellcolor{uq!50} & \cellcolor{uq!40} & \cellcolor{uq!30} & \cellcolor{uq!20} & \cellcolor{uq!10} \\
+\multirow{3}{*} {\rotatebox[origin=c]{90}{working}} 
+& \cellcolor{uq!80} & \cellcolor{uq!70} & \cellcolor{uq!60} & \cellcolor{uq!50} & \cellcolor{uq!40} & \cellcolor{uq!30} & \cellcolor{uq!20} & \cellcolor{uq!10} & \\
+& \cellcolor{uq!70} & \cellcolor{uq!60} & \cellcolor{uq!50} & \cellcolor{uq!40} & \cellcolor{uq!30} & \cellcolor{uq!20} & \cellcolor{uq!10} & & \\
+& \cellcolor{uq!60} & \cellcolor{uq!50} & \cellcolor{uq!40} & \cellcolor{uq!30} & \cellcolor{uq!20} & \cellcolor{uq!10} & & & \\
+\end{tabular}
+\end{minipage}
+\hfill
+\begin{minipage}{.45\linewidth}
+\begin{figure}
+\includegraphics[width=5cm]{images/LangChang10.png}
+\end{figure}
+\end{minipage}
+\end{minipage}
+\end{frame}
+
+\begin{frame}
+\frametitle{Diffusion of Innovations}
+\begin{minipage}[t]{\linewidth}
+\begin{minipage}{.45\linewidth}
+\begin{tabular}{cccccccccc }
+& \multicolumn{9}{c}{young $\longleftrightarrow$ old} \\ 
+\multirow{3}{*} {\rotatebox[origin=c]{90}{upper}}	 
+& \cellcolor{uq!70} & \cellcolor{uq!60} & \cellcolor{uq!50} & \cellcolor{uq!40} & \cellcolor{uq!30} & \cellcolor{uq!20} & \cellcolor{uq!10} & & \\
+& \cellcolor{uq!80} & \cellcolor{uq!70} & \cellcolor{uq!60} & \cellcolor{uq!50} & \cellcolor{uq!40} & \cellcolor{uq!30} & \cellcolor{uq!20} & \cellcolor{uq!10} & \\
+& \cellcolor{uq!90} & \cellcolor{uq!80} & \cellcolor{uq!70} & \cellcolor{uq!60} & \cellcolor{uq!50} & \cellcolor{uq!40} & \cellcolor{uq!30} & \cellcolor{uq!20} & \cellcolor{uq!10} \\
+\multirow{3}{*} {\rotatebox[origin=c]{90}{$\longleftrightarrow$} }
+& \cellcolor{uq!100} & \cellcolor{uq!90} & \cellcolor{uq!80} & \cellcolor{uq!70} & \cellcolor{uq!60} & \cellcolor{uq!50} & \cellcolor{uq!40} & \cellcolor{uq!30} & \cellcolor{uq!20} \\
+& \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!90} & \cellcolor{uq!80} & \cellcolor{uq!70} & \cellcolor{uq!60} & \cellcolor{uq!50} & \cellcolor{uq!40} & \cellcolor{uq!30}\\
+& \cellcolor{uq!100} & \cellcolor{uq!90} & \cellcolor{uq!80} & \cellcolor{uq!70} & \cellcolor{uq!60} & \cellcolor{uq!50} & \cellcolor{uq!40} & \cellcolor{uq!30} & \cellcolor{uq!20} \\
+\multirow{3}{*} {\rotatebox[origin=c]{90}{working}} 
+& \cellcolor{uq!90} & \cellcolor{uq!80} & \cellcolor{uq!70} & \cellcolor{uq!60} & \cellcolor{uq!50} & \cellcolor{uq!40} & \cellcolor{uq!30} & \cellcolor{uq!20} & \cellcolor{uq!10} \\
+& \cellcolor{uq!80} & \cellcolor{uq!70} & \cellcolor{uq!60} & \cellcolor{uq!50} & \cellcolor{uq!40} & \cellcolor{uq!30} & \cellcolor{uq!20} & \cellcolor{uq!10} & \\
+& \cellcolor{uq!70} & \cellcolor{uq!60} & \cellcolor{uq!50} & \cellcolor{uq!40} & \cellcolor{uq!30} & \cellcolor{uq!20} & \cellcolor{uq!10} & & \\
+\end{tabular}
+\end{minipage}
+\hfill
+\begin{minipage}{.45\linewidth}
+\begin{figure}
+\includegraphics[width=5cm]{images/LangChang11.png}
+\end{figure}
+\end{minipage}
+\end{minipage}
+\end{frame}
+
+\begin{frame}
+\frametitle{Diffusion of Innovations}
+\begin{minipage}[t]{\linewidth}
+\begin{minipage}{.45\linewidth}
+\begin{tabular}{cccccccccc }
+& \multicolumn{9}{c}{young $\longleftrightarrow$ old} \\ 
+\multirow{3}{*} {\rotatebox[origin=c]{90}{upper}}	 
+& \cellcolor{uq!80} & \cellcolor{uq!70} & \cellcolor{uq!60} & \cellcolor{uq!50} & \cellcolor{uq!40} & \cellcolor{uq!30} & \cellcolor{uq!20} & \cellcolor{uq!10}  & \\
+& \cellcolor{uq!90} & \cellcolor{uq!80} & \cellcolor{uq!70} & \cellcolor{uq!60} & \cellcolor{uq!50} & \cellcolor{uq!40} & \cellcolor{uq!30} & \cellcolor{uq!20} & \cellcolor{uq!10} \\
+& \cellcolor{uq!100} & \cellcolor{uq!90} & \cellcolor{uq!80} & \cellcolor{uq!70} & \cellcolor{uq!60} & \cellcolor{uq!50} & \cellcolor{uq!40} & \cellcolor{uq!30} & \cellcolor{uq!20} \\
+\multirow{3}{*} {\rotatebox[origin=c]{90}{$\longleftrightarrow$} }
+& \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!90} & \cellcolor{uq!80} & \cellcolor{uq!70} & \cellcolor{uq!60} & \cellcolor{uq!50} & \cellcolor{uq!40} & \cellcolor{uq!30} \\
+& \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!90} & \cellcolor{uq!80} & \cellcolor{uq!70} & \cellcolor{uq!60} & \cellcolor{uq!50} & \cellcolor{uq!40}\\
+& \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!90} & \cellcolor{uq!80} & \cellcolor{uq!70} & \cellcolor{uq!60} & \cellcolor{uq!50} & \cellcolor{uq!40} & \cellcolor{uq!30} \\
+\multirow{3}{*} {\rotatebox[origin=c]{90}{working}} 
+& \cellcolor{uq!100} & \cellcolor{uq!90} & \cellcolor{uq!80} & \cellcolor{uq!70} & \cellcolor{uq!60} & \cellcolor{uq!50} & \cellcolor{uq!40} & \cellcolor{uq!30} & \cellcolor{uq!20} \\
+& \cellcolor{uq!90} & \cellcolor{uq!80} & \cellcolor{uq!70} & \cellcolor{uq!60} & \cellcolor{uq!50} & \cellcolor{uq!40} & \cellcolor{uq!30} & \cellcolor{uq!20} & \cellcolor{uq!10} \\
+& \cellcolor{uq!80} & \cellcolor{uq!70} & \cellcolor{uq!60} & \cellcolor{uq!50} & \cellcolor{uq!40} & \cellcolor{uq!30} & \cellcolor{uq!20} & \cellcolor{uq!10}  & \\
+\end{tabular}
+\end{minipage}
+\hfill
+\begin{minipage}{.45\linewidth}
+\begin{figure}
+\includegraphics[width=5cm]{images/LangChang12.png}
+\end{figure}
+\end{minipage}
+\end{minipage}
+\end{frame}
+
+\begin{frame}
+\frametitle{Diffusion of Innovations}
+\begin{minipage}[t]{\linewidth}
+\begin{minipage}{.45\linewidth}
+\begin{tabular}{cccccccccc }
+& \multicolumn{9}{c}{young $\longleftrightarrow$ old} \\ 
+\multirow{3}{*} {\rotatebox[origin=c]{90}{upper}}	 
+& \cellcolor{uq!90} & \cellcolor{uq!80} & \cellcolor{uq!70} & \cellcolor{uq!60} & \cellcolor{uq!50} & \cellcolor{uq!40} & \cellcolor{uq!30} & \cellcolor{uq!20} & \cellcolor{uq!10} \\
+& \cellcolor{uq!100} & \cellcolor{uq!90} & \cellcolor{uq!80} & \cellcolor{uq!70} & \cellcolor{uq!60} & \cellcolor{uq!50} & \cellcolor{uq!40} & \cellcolor{uq!30} & \cellcolor{uq!20} \\
+& \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!90} & \cellcolor{uq!80} & \cellcolor{uq!70} & \cellcolor{uq!60} & \cellcolor{uq!50} & \cellcolor{uq!40} & \cellcolor{uq!30} \\
+\multirow{3}{*} {\rotatebox[origin=c]{90}{$\longleftrightarrow$} }
+& \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!90} & \cellcolor{uq!80} & \cellcolor{uq!70} & \cellcolor{uq!60} & \cellcolor{uq!50} & \cellcolor{uq!40} \\
+& \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!90} & \cellcolor{uq!80} & \cellcolor{uq!70} & \cellcolor{uq!60} & \cellcolor{uq!50}\\
+& \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!90} & \cellcolor{uq!80} & \cellcolor{uq!70} & \cellcolor{uq!60} & \cellcolor{uq!50} & \cellcolor{uq!40} \\
+\multirow{3}{*} {\rotatebox[origin=c]{90}{working}} 
+& \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!90} & \cellcolor{uq!80} & \cellcolor{uq!70} & \cellcolor{uq!60} & \cellcolor{uq!50} & \cellcolor{uq!40} & \cellcolor{uq!30} \\
+& \cellcolor{uq!100} & \cellcolor{uq!90} & \cellcolor{uq!80} & \cellcolor{uq!70} & \cellcolor{uq!60} & \cellcolor{uq!50} & \cellcolor{uq!40} & \cellcolor{uq!30} & \cellcolor{uq!20} \\
+& \cellcolor{uq!90} & \cellcolor{uq!80} & \cellcolor{uq!70} & \cellcolor{uq!60} & \cellcolor{uq!50} & \cellcolor{uq!40} & \cellcolor{uq!30} & \cellcolor{uq!20} & \cellcolor{uq!10} \\
+\end{tabular}
+\end{minipage}
+\hfill
+\begin{minipage}{.45\linewidth}
+\begin{figure}
+\includegraphics[width=5cm]{images/LangChang13.png}
+\end{figure}
+\end{minipage}
+\end{minipage}
+\end{frame}
+
+\begin{frame}
+\frametitle{Diffusion of Innovations}
+\begin{minipage}[t]{\linewidth}
+\begin{minipage}{.45\linewidth}
+\begin{tabular}{cccccccccc }
+& \multicolumn{9}{c}{young $\longleftrightarrow$ old} \\ 
+\multirow{3}{*} {\rotatebox[origin=c]{90}{upper}}	 
+& \cellcolor{uq!100} & \cellcolor{uq!90} & \cellcolor{uq!80} & \cellcolor{uq!70} & \cellcolor{uq!60} & \cellcolor{uq!50} & \cellcolor{uq!40} & \cellcolor{uq!30} & \cellcolor{uq!20} \\
+& \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!90} & \cellcolor{uq!80} & \cellcolor{uq!70} & \cellcolor{uq!60} & \cellcolor{uq!50} & \cellcolor{uq!40} & \cellcolor{uq!30} \\
+& \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!90} & \cellcolor{uq!80} & \cellcolor{uq!70} & \cellcolor{uq!60} & \cellcolor{uq!50} & \cellcolor{uq!40} \\
+\multirow{3}{*} {\rotatebox[origin=c]{90}{$\longleftrightarrow$} }
+& \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!90} & \cellcolor{uq!80} & \cellcolor{uq!70} & \cellcolor{uq!60} & \cellcolor{uq!50} \\
+& \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!90} & \cellcolor{uq!80} & \cellcolor{uq!70} & \cellcolor{uq!60}\\
+& \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!90} & \cellcolor{uq!80} & \cellcolor{uq!70} & \cellcolor{uq!60} & \cellcolor{uq!50} \\
+\multirow{3}{*} {\rotatebox[origin=c]{90}{working}} 
+& \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!90} & \cellcolor{uq!80} & \cellcolor{uq!70} & \cellcolor{uq!60} & \cellcolor{uq!50} & \cellcolor{uq!40} \\
+& \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!90} & \cellcolor{uq!80} & \cellcolor{uq!70} & \cellcolor{uq!60} & \cellcolor{uq!50} & \cellcolor{uq!40} & \cellcolor{uq!30} \\
+& \cellcolor{uq!100} & \cellcolor{uq!90} & \cellcolor{uq!80} & \cellcolor{uq!70} & \cellcolor{uq!60} & \cellcolor{uq!50} & \cellcolor{uq!40} & \cellcolor{uq!30} & \cellcolor{uq!20} \\
+\end{tabular}
+\end{minipage}
+\hfill
+\begin{minipage}{.45\linewidth}
+\begin{figure}
+\includegraphics[width=5cm]{images/LangChang14.png}
+\end{figure}
+\end{minipage}
+\end{minipage}
+\end{frame}
+
+\begin{frame}
+\frametitle{Diffusion of Innovations}
+\begin{minipage}[t]{\linewidth}
+\begin{minipage}{.45\linewidth}
+\begin{tabular}{cccccccccc }
+& \multicolumn{9}{c}{young $\longleftrightarrow$ old} \\ 
+\multirow{3}{*} {\rotatebox[origin=c]{90}{upper}}	 
+& \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!90} & \cellcolor{uq!80} & \cellcolor{uq!70} & \cellcolor{uq!60} & \cellcolor{uq!50} & \cellcolor{uq!40} & \cellcolor{uq!30} \\
+& \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!90} & \cellcolor{uq!80} & \cellcolor{uq!70} & \cellcolor{uq!60} & \cellcolor{uq!50} & \cellcolor{uq!40} \\
+& \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!90} & \cellcolor{uq!80} & \cellcolor{uq!70} & \cellcolor{uq!60} & \cellcolor{uq!50} \\
+\multirow{3}{*} {\rotatebox[origin=c]{90}{$\longleftrightarrow$} }
+& \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!90} & \cellcolor{uq!80} & \cellcolor{uq!70} & \cellcolor{uq!60} \\
+& \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!90} & \cellcolor{uq!80} & \cellcolor{uq!70}\\
+& \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!90} & \cellcolor{uq!80} & \cellcolor{uq!70} & \cellcolor{uq!60} \\
+\multirow{3}{*} {\rotatebox[origin=c]{90}{working}} 
+& \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!90} & \cellcolor{uq!80} & \cellcolor{uq!70} & \cellcolor{uq!60} & \cellcolor{uq!50} \\
+& \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!90} & \cellcolor{uq!80} & \cellcolor{uq!70} & \cellcolor{uq!60} & \cellcolor{uq!50} & \cellcolor{uq!40} \\
+& \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!90} & \cellcolor{uq!80} & \cellcolor{uq!70} & \cellcolor{uq!60} & \cellcolor{uq!50} & \cellcolor{uq!40} & \cellcolor{uq!30} \\
+\end{tabular}
+\end{minipage}
+\hfill
+\begin{minipage}{.45\linewidth}
+\begin{figure}
+\includegraphics[width=5cm]{images/LangChang15.png}
+\end{figure}
+\end{minipage}
+\end{minipage}
+\end{frame}
+
+\begin{frame}
+\frametitle{Diffusion of Innovations}
+\begin{minipage}[t]{\linewidth}
+\begin{minipage}{.45\linewidth}
+\begin{tabular}{cccccccccc }
+& \multicolumn{9}{c}{young $\longleftrightarrow$ old} \\ 
+\multirow{3}{*} {\rotatebox[origin=c]{90}{upper}}	 
+& \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!90} & \cellcolor{uq!80} & \cellcolor{uq!70} & \cellcolor{uq!60} & \cellcolor{uq!50} & \cellcolor{uq!40} \\
+& \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!90} & \cellcolor{uq!80} & \cellcolor{uq!70} & \cellcolor{uq!60} & \cellcolor{uq!50} \\
+& \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!90} & \cellcolor{uq!80} & \cellcolor{uq!70} & \cellcolor{uq!60} \\
+\multirow{3}{*} {\rotatebox[origin=c]{90}{$\longleftrightarrow$} }
+& \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!90} & \cellcolor{uq!80} & \cellcolor{uq!70} \\
+& \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!90} & \cellcolor{uq!80}\\
+& \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!90} & \cellcolor{uq!80} & \cellcolor{uq!70} \\
+\multirow{3}{*} {\rotatebox[origin=c]{90}{working}} 
+& \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!90} & \cellcolor{uq!80} & \cellcolor{uq!70} & \cellcolor{uq!60} \\
+& \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!90} & \cellcolor{uq!80} & \cellcolor{uq!70} & \cellcolor{uq!60} & \cellcolor{uq!50} \\
+& \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!90} & \cellcolor{uq!80} & \cellcolor{uq!70} & \cellcolor{uq!60} & \cellcolor{uq!50} & \cellcolor{uq!40} \\
+\end{tabular}
+\end{minipage}
+\hfill
+\begin{minipage}{.45\linewidth}
+\begin{figure}
+\includegraphics[width=5cm]{images/LangChang16.png}
+\end{figure}
+\end{minipage}
+\end{minipage}
+\end{frame}
+
+\begin{frame}
+\frametitle{Diffusion of Innovations}
+\begin{minipage}[t]{\linewidth}
+\begin{minipage}{.45\linewidth}
+\begin{tabular}{cccccccccc }
+& \multicolumn{9}{c}{young $\longleftrightarrow$ old} \\ 
+\multirow{3}{*} {\rotatebox[origin=c]{90}{upper}}	 
+& \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!90} & \cellcolor{uq!80} & \cellcolor{uq!70} & \cellcolor{uq!60} & \cellcolor{uq!50} \\
+& \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!90} & \cellcolor{uq!80} & \cellcolor{uq!70} & \cellcolor{uq!60} \\
+& \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!90} & \cellcolor{uq!80} & \cellcolor{uq!70} \\
+\multirow{3}{*} {\rotatebox[origin=c]{90}{$\longleftrightarrow$} }
+& \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!90} & \cellcolor{uq!80} \\
+& \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!90}\\
+& \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!90} & \cellcolor{uq!80} \\
+\multirow{3}{*} {\rotatebox[origin=c]{90}{working}} 
+& \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!90} & \cellcolor{uq!80} & \cellcolor{uq!70} \\
+& \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!90} & \cellcolor{uq!80} & \cellcolor{uq!70} & \cellcolor{uq!60} \\
+& \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!90} & \cellcolor{uq!80} & \cellcolor{uq!70} & \cellcolor{uq!60} & \cellcolor{uq!50} \\
+\end{tabular}
+\end{minipage}
+\hfill
+\begin{minipage}{.45\linewidth}
+\begin{figure}
+\includegraphics[width=5cm]{images/LangChang17.png}
+\end{figure}
+\end{minipage}
+\end{minipage}
+\end{frame}
+
+\begin{frame}
+\frametitle{Diffusion of Innovations}
+\begin{minipage}[t]{\linewidth}
+\begin{minipage}{.45\linewidth}
+\begin{tabular}{cccccccccc }
+& \multicolumn{9}{c}{young $\longleftrightarrow$ old} \\ 
+\multirow{3}{*} {\rotatebox[origin=c]{90}{upper}}	 
+& \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!90} & \cellcolor{uq!80} & \cellcolor{uq!70} & \cellcolor{uq!60} \\
+& \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!90} & \cellcolor{uq!80} & \cellcolor{uq!70} \\
+& \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!90} & \cellcolor{uq!80} \\
+\multirow{3}{*} {\rotatebox[origin=c]{90}{$\longleftrightarrow$} }
+& \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!90} \\
+& \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100}\\
+& \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!90} \\
+\multirow{3}{*} {\rotatebox[origin=c]{90}{working}} 
+& \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!90} & \cellcolor{uq!80} \\
+& \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!90} & \cellcolor{uq!80} & \cellcolor{uq!70} \\
+& \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!90} & \cellcolor{uq!80} & \cellcolor{uq!70} & \cellcolor{uq!60} \\
+\end{tabular}
+\end{minipage}
+\hfill
+\begin{minipage}{.45\linewidth}
+\begin{figure}
+\includegraphics[width=5cm]{images/LangChang18.png}
+\end{figure}
+\end{minipage}
+\end{minipage}
+\end{frame}
+
+\begin{frame}
+\frametitle{Diffusion of Innovations}
+\begin{minipage}[t]{\linewidth}
+\begin{minipage}{.45\linewidth}
+\begin{tabular}{cccccccccc }
+& \multicolumn{9}{c}{young $\longleftrightarrow$ old} \\ 
+\multirow{3}{*} {\rotatebox[origin=c]{90}{upper}}	 
+& \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!90} & \cellcolor{uq!80} & \cellcolor{uq!70} \\
+& \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!90} & \cellcolor{uq!80} \\
+& \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!90} \\
+\multirow{3}{*} {\rotatebox[origin=c]{90}{$\longleftrightarrow$} }
+& \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} \\
+& \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100}\\
+& \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} \\
+\multirow{3}{*} {\rotatebox[origin=c]{90}{working}} 
+& \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!90} \\
+& \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!90} & \cellcolor{uq!80} \\
+& \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!90} & \cellcolor{uq!80} & \cellcolor{uq!70} \\
+\end{tabular}
+\end{minipage}
+\hfill
+\begin{minipage}{.45\linewidth}
+\begin{figure}
+\includegraphics[width=5cm]{images/LangChang19.png}
+\end{figure}
+\end{minipage}
+\end{minipage}
+\end{frame}
+
+\begin{frame}
+\frametitle{Diffusion of Innovations}
+\begin{minipage}[t]{\linewidth}
+\begin{minipage}{.45\linewidth}
+\begin{tabular}{cccccccccc }
+& \multicolumn{9}{c}{young $\longleftrightarrow$ old} \\ 
+\multirow{3}{*} {\rotatebox[origin=c]{90}{upper}}	 
+& \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!90} & \cellcolor{uq!80} \\
+& \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!90} \\
+& \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} \\
+\multirow{3}{*} {\rotatebox[origin=c]{90}{$\longleftrightarrow$} }
+& \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} \\
+& \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100}\\
+& \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} \\
+\multirow{3}{*} {\rotatebox[origin=c]{90}{working}} 
+& \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} \\
+& \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!90} \\
+& \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!90} & \cellcolor{uq!80} \\
+\end{tabular}
+\end{minipage}
+\hfill
+\begin{minipage}{.45\linewidth}
+\begin{figure}
+\includegraphics[width=5cm]{images/LangChang20.png}
+\end{figure}
+\end{minipage}
+\end{minipage}
+\end{frame}
+
+\begin{frame}
+\frametitle{Diffusion of Innovations}
+\begin{minipage}[t]{\linewidth}
+\begin{minipage}{.45\linewidth}
+\begin{tabular}{cccccccccc }
+& \multicolumn{9}{c}{young $\longleftrightarrow$ old} \\ 
+\multirow{3}{*} {\rotatebox[origin=c]{90}{upper}}	 
+& \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!90} \\
+& \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} \\
+& \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} \\
+\multirow{3}{*} {\rotatebox[origin=c]{90}{$\longleftrightarrow$} }
+& \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} \\
+& \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100}\\
+& \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} \\
+\multirow{3}{*} {\rotatebox[origin=c]{90}{working}} 
+& \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} \\
+& \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} \\
+& \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!90} \\
+\end{tabular}
+\end{minipage}
+\hfill
+\begin{minipage}{.45\linewidth}
+\begin{figure}
+\includegraphics[width=5cm]{images/LangChang21.png}
+\end{figure}
+\end{minipage}
+\end{minipage}
+\end{frame}
+
+\begin{frame}
+\frametitle{Diffusion of Innovations}
+\begin{minipage}[t]{\linewidth}
+\begin{minipage}{.45\linewidth}
+\begin{tabular}{cccccccccc }
+& \multicolumn{9}{c}{young $\longleftrightarrow$ old} \\ 
+\multirow{3}{*} {\rotatebox[origin=c]{90}{upper}}	 
+& \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} \\
+& \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} \\
+& \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} \\
+\multirow{3}{*} {\rotatebox[origin=c]{90}{$\longleftrightarrow$} }
+& \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} \\
+& \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100}\\
+& \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} \\
+\multirow{3}{*} {\rotatebox[origin=c]{90}{working}} 
+& \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} \\
+& \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} \\
+& \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} & \cellcolor{uq!100} \\
+\end{tabular}
+\end{minipage}
+\hfill
+\begin{minipage}{.45\linewidth}
+\begin{figure}
+\includegraphics[width=5cm]{images/LangChang22.png}
+\end{figure}
+\end{minipage}
+\end{minipage}
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Research Question}
+\begin{center}
+Q\\[.5cm]
+\begin{tabular}{!{\color{uq}\vrule} c !{\color{uq}\vrule}}
+\arrayrulecolor{uq}\hline\\
+Are Asian Englishes in-line with the trend among \\
+traditional L1 and other post-colonial varieties of English \\
+in that \textit{very} is being replaced by \textit{really}? \\
+\\\arrayrulecolor{uq}\hline
+\end{tabular}
+\end{center}
+\end{frame}
+
+\begin{frame}
+\frametitle{Hypotheses}
+\begin{center}
+H_{1}1\\[.2cm]
+\begin{tabular}{!{\color{uq}\vrule} c !{\color{uq}\vrule}}
+\arrayrulecolor{uq}\hline\\
+HKE, IndE, PhiE align with other varieties: \\
+\textit{really} is replacing \textit{very} \\
+as the default adjective amplifier \\
+\\\arrayrulecolor{uq}\hline
+\end{tabular}
+\\[.2cm]
+H_{1}2\\[.2cm]
+\begin{tabular}{!{\color{uq}\vrule} c !{\color{uq}\vrule}}
+\arrayrulecolor{uq}\hline\\
+Aligned with AmE/AusE $\rightarrow$ more advanced\\
+Aligned with GBE $\rightarrow$ more lagging behind\\
+\\\arrayrulecolor{uq}\hline
+\end{tabular}
+\end{center}
+\end{frame}
+
+\section{Data and Methodology}
+\begin{frame}
+\begin{center}
+\begin{large}
+\color{uq}{\textsc{Data and Methodology}}
+\end{large}
+\end{center}
+\end{frame}
+
+\subsection{Data}
+
+\begin{frame}
+\frametitle{Corpus data: International Corpus of English (ICE)}
+\begin{itemize}
+\item[-] Hong Kong, Indian, and Philippine ICE components
+\item[-] Shared design (allows meaningful comparisons between varieties of English) 
+\item[-] One million words (600,000 spoken and 400,000 written) from diverse spoken and written text types (cf. next slide) with each file containing app. 2,000 words.
+\item[-] Accompanied by metadata and biodata of speaker (extremely interesting resource for variationist analyses)
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Corpus data: International Corpus of English (ICE)}
+\begin{table}
+\begin{tiny}
+\begin{tabularx}{\textwidth}{l lllc}
+\hline\\
+Mode & Conversation type & Register & Text type & Number of text files\\
+\hline
+\multirow{15}{*}{SPOKEN (300)} & \multirow{8}{*}{Dialogues (180)} & \multirow{2}{*}{Private (100)} & Face-to-face conversations & 90\\
+& & & Phonecalls & 10\\
+\cline{3-5}
+& & \multirow{6}{*}{Public (80)} & Classroom Lessons & 20\\
+& & & Broadcast Discussions & 20\\
+& & & Broadcast Interviews & 10\\
+& & & Parliamentary Debates & 10\\
+& & & Legal cross-examinations & 10\\
+& & & Business Transactions & 10\\
+\cline{2-5}
+& \multirow{7}{*}{Monologues (120)} & \multirow{4}{*}{Unscripted (70)} & Spontaneous commentaries & 20\\
+& & & Unscripted Speeches & 30\\
+& & & Demonstrations & 10\\
+& & & Legal Presentations & 10\\
+\cline{3-5}
+& & \multirow{3}{*}{Scripted (50)} & Broadcast News & 20\\
+& & & Broadcast Talks & 20\\
+& & & Non-broadcast Talks & 10\\
+\hline\\
+\end{tabularx}
+\end{tiny}
+\end{table}
+\end{frame}
+
+\subsection{Data Processing}
+\begin{frame}
+\frametitle{Data Processing}
+\begin{itemize}
+\item[-] Spoken private dialogue section of each component
+\item[-] Part--of-speech tagged (OpenNLP vis \texttt{R}) the 
+\item[-] Retrieved adjectives (PoS--tag JJ)
+\item[-] Determined whether adjective were preceded by an amplifier (member of a predefined set of amplifiers)
+\item[-] Sentiment Analysis of adjective types \textcolor{gray}{\begin{scriptsize}\citep{jockers2017postdonqujiote}\end{scriptsize}}
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Data Processing}
+\begin{itemize}
+\item[-] Determined if the same amplifier type had occurred within a span of three adjective slots previously ($\rightarrow$ Priming)
+\item[-] Token freq. of adjective type by age group \textcolor{gray}{\begin{scriptsize}\citep{tagliamonte2005weird}\end{scriptsize}} 
+\item[-] Removed\dots
+\begin{itemize}
+\item[-] negated adjectives
+\item[-] comparative and superlative forms
+\item[-] adjectives that were not amplified by at least two different amplifier types
+\item[-] adjectives that were preceded by downtoners
+\item[-] strange forms (e.g. \textit{much, many})
+\end{itemize}
+\end{itemize} 
+\end{frame}
+
+\begin{frame}
+\frametitle{Data Processing}
+\begin{itemize}
+\item[-] Syntactic context (attributive \textcolor{gray}{\textit{the nice man}} VS predicative \textcolor{gray}{\textit{The man is nice.}})
+\item[-] Gradability: likelihood of the occurrence in comparative contexts against occurrence in non-comparative contexts
+\item[-] Semantic classification of adjective \textcolor{gray}{\begin{scriptsize}(simplified version of \citet{dixon1977adjectives}, cf. also \citet{darcy2015stability, tagliamonte2005weird, tagliamonte2006so, tagliamonte2008intensifiers})\end{scriptsize}}\\[.15cm] 
+\item[-] Manual cross--evaluation of automated classification\\[.15cm]
+\item[-] Metadata and speaker information
+\end{itemize} 
+\end{frame}
+
+\subsection{Variable Coding}
+
+\begin{frame}
+\frametitle{Variable Coding} 
+\scriptsize{
+\begin{tabularx}{\textwidth}{lcrrr}
+\multicolumn{3}{c}{\textbf{Dependent Variable(s)}} \\\hline 
+\textbf{Variant} & categorical & occurrence of pre-adjectival \textit{really, so, very, other} \\
+\hline\\
+\multicolumn{3}{c}{\textbf{Independent Variable(s)}} \\\hline
+\textbf{Age} & ordinal & min. young | middle-aged | old & \parbox[t]{2mm}{\multirow{3}{*}{\rotatebox[origin=c]{90}{extra}}} & \parbox[t]{2mm}{\multirow{3}{*}{\rotatebox[origin=c]{90}{linguistic}}}\\
+\textbf{Gender} & nominal & Female | Male & &\\
+\textbf{(Education)} & nominal & College | NoCollege & &\\
+\arrayrulecolor{gray!20}\hline
+\textbf{Priming} & nominal & prime | noprime & &\\
+\arrayrulecolor{gray!20}\hline
+\textbf{Emotionality} & categorical & negative | nonemotional | positive & \parbox[t]{2mm}{\multirow{6}{*}{\rotatebox[origin=c]{90}{intra}}} & \parbox[t]{2mm}{\multirow{6}{*}{\rotatebox[origin=c]{90}{linguistic}}}\\
+\textbf{Function} & nominal & attributive | predicative & & \\
+\textbf{SemanticCat.} & categorical & semantic category of adj. & & \\
+\textbf{Gradability} & numeric & Gradability score based on BNC & & \\
+\textbf{Adjective} & categorical & different | other & & \\
+\textbf{Frequency} & numeric & Frequency of adj. by age group & & \\
+\arrayrulecolor{black}\hline
+\end{tabularx}
+}
+\end{frame}
+
+\subsection{Statistical analysis}
+\begin{frame}
+\begin{center}
+\begin{large}
+\color{uq}{\textsc{Statistical analysis}}
+\end{large}
+\end{center}
+\end{frame}
+
+\begin{frame}
+\frametitle{Statistical analysis: options}
+\begin{table}
+\begin{tiny}
+\begin{tabularx}{\textwidth}{l llllc}
+\hline\\
+\textbf{Model} & \textbf{Dep. var.} & \textbf{Interactions} & \textbf{Nested data} & \textbf{Output} & \textbf{Overfitting} \\\\
+\hline\\
+\multicolumn{6}{c}{\textbf{Tree-based models}} \\
+\hline\\
+Conditional-Inference Tree & 
+\multirow{2}{*}{\textcolor{green}{\cmark}} & 
+\multirow{2}{*}{\textcolor{green}{\cmark}} & 
+\multirow{2}{*}{\textcolor{red}{X}}  &
+\multirow{2}{*}{\textcolor{green}{\cmark}} & 
+\multirow{2}{*}{\textcolor{red}{X}}  \\
+(CIT)\\
+\hline\\
+Random Forests & 
+\multirow{2}{*}{\textcolor{green}{\cmark}} & 
+\multirow{2}{*}{\textcolor{green}{\cmark}} & 
+\multirow{2}{*}{\textcolor{red}{X}}  &
+\multirow{2}{*}{\textcolor{red}{X}}  &
+\multirow{2}{*}{\textcolor{green}{\cmark}} \\
+(RF)\\
+\hline\\
+\multicolumn{6}{c}{\textbf{Regression models}} \\
+\hline\\
+Multinomial mixed-effects   & 
+\multirow{2}{*}{\textcolor{green}{\cmark}}& 
+\multirow{2}{*}{\textcolor{green}{\cmark}}& 
+\multirow{2}{*}{\textcolor{green}{\cmark}} &
+\multirow{2}{*}{\textcolor{red}{X}}  & 
+\multirow{2}{*}{\textcolor{green}{\cmark}} \\
+(GLMMM) \\
+\hline\\
+Logistic mixed-effects   & 
+\multirow{2}{*}{\textcolor{red}{X}} & 
+\multirow{2}{*}{\textcolor{green}{\cmark}} & 
+\multirow{2}{*}{\textcolor{green}{\cmark}} &
+\multirow{2}{*}{\textcolor{green}{\cmark}} & 
+\multirow{2}{*}{\textcolor{green}{\cmark}} \\
+(GLMBLM)\\
+\hline
+\end{tabularx}
+\end{tiny}
+\end{table}
+$\rightarrow$ CIT \textcolor{gray}{separate GLMBLMs for each variant (not shown today)}
+\end{frame}
+
+%\begin{frame}
+%\textbf{Generalized Linear Mixed-Effects Binomial Logistic Regression Model}\\
+%\textcolor{gray}{\begin{scriptsize}\citep{baayen2008analyzing, faraway2016extending}\end{scriptsize}}\\[.5cm]
+%What is GLMBLM?
+%\begin{itemize}
+%\item[-] Standard model for multivariate analyses
+%\item[-] Can handle nested/grouped data structure
+%\item[-] Easy multicollinearity detection
+%\end{itemize}
+%Problems of GLMBLM
+%\begin{itemize}
+%\item[-] Cannot handle small data sets (well)
+%\item[-] Extremely high $\beta$-error rate \textcolor{gray}{\begin{scriptsize}\citep{johnson2009getting}\end{scriptsize}}
+%\begin{itemize}
+%\item if sig. effect: \textcolor{green}{\cmark}\\
+%\item if no sig. effect: \textcolor{uq}{???}
+%\end{itemize}
+%\end{itemize}
+%\end{frame}
+
+\section{Results}
+\begin{frame}
+\begin{center}
+\begin{large}
+\color{uq}{\textsc{Results}}
+\end{large}
+\end{center}
+\end{frame}
+
+\begin{frame}
+Results
+\begin{figure}[!htb]
+\centering
+\includegraphics[width=0.9\linewidth]{D:/Uni/Projekte/02-Intensification/AmpHKPIE/images/VariantAgeCorpusFunction.png}
+\caption{\tiny \% variants across speaker age by function and corpus.}
+\label{fig:VariantAgeFunctionCorpus}
+\end{figure} 
+\end{frame} 
+
+\begin{frame}
+\begin{figure}[!htb]
+\centering
+\includegraphics[width=1.1\linewidth]{D:/Uni/Projekte/02-Intensification/AmpHKPIE/images/citphi.png}
+\caption{\tiny Results of the CIT analysis on ICE-PHI.}
+\label{fig:VariantAgeFunctionCorpus}
+\end{figure} 
+\end{frame} 
+
+\begin{frame}
+\begin{figure}[!htb]
+\centering
+\includegraphics[width=1.1\linewidth]{D:/Uni/Projekte/02-Intensification/AmpHKPIE/images/citind.png}
+\caption{\tiny Results of the CIT analysis on ICE-IND and ICE-HK.}
+\label{fig:VariantAgeFunctionCorpus}
+\end{figure} 
+\end{frame} 
+
+\section{Discussion \& Outlook}
+\begin{frame}
+\begin{center}
+\textsc{\textcolor{uq}{Discussion \& Outlook}}
+\end{center}
+\end{frame}
+
+\begin{frame}
+\frametitle{Summary}
+The analysis shows that \dots
+\begin{itemize} 
+\item[-] the trajectory of change in the adj. amplifier system of PhiE is approximating the trajectories of other varieties (NZE, IrE, AusE, etc.)\textcolor{gray}{\citep[see e.g.][]{darcy2015stability}} \\$\rightarrow$ only PhiE confirms H_{1}1
+\item[-] change in PhiE is substantially further advanced compared to HKE and IndE $\rightarrow$ confirmation of H_{1}2
+\item[-] during stasis and initial stages of change, intra-linguistic factors dominate 
+\item[-] once change is accelerating, extra-linguistic (social) factors become more important \textcolor{gray}{\citep[see][]{labov2002driving}}
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Discussion}
+\begin{itemize}
+\item[-] During initial stages of change, the type of the amplified adjective and its linguistic properties determine amplifier use
+\item[-] Once an amplifier variant attains social meaning, it will (further) increase in use: linguistic change piggybacks on social stratification\\[.2cm]
+\begin{scriptsize}
+\textquote{Sociolinguistic variation is parasitic upon such linguistic variation. It is an opportunistic process that reinforces social distinctions by associating them with particular linguistic variants. [\dots] The use of linguistic forms to increase distinctiveness of particular groups is a driving force for the acceleration of change} \\
+\hfill\textcolor{gray}{\citep{labov2002driving}}
+\end{scriptsize}
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Outlook}
+Could this be a universal mechanism/pattern?\\[.5cm]
+Test if the mechanisms\dots
+\begin{itemize}
+\item[-] can be shown to have worked in analogous changes in English (e.g.  \begin{scriptsize}
+ \textcolor{gray}{3^{rd} p. sg. ind. morpheme: <eth> $\rightarrow$ <(e)s>}
+\end{scriptsize})
+\item[-] can be shown to have worked in analogous changes in languages other than English
+\end{itemize} 
+\end{frame}
+
+\begin{frame}
+\begin{center}
+\textsc{\textcolor{uq}{Thank you so, really, very much!}}\\[1cm]
+\begin{scriptsize}
+\textsc{\textcolor{uq}{Acknowledgements}\\[.25cm]
+I would like to thank\dots\\[.25cm]
+the ICE teams who have compiled the data for the current study \\
+(without them the current study would not have been possible)\\[.25cm]
+my colleagues at UQ \\
+for comments and their feedback on earlier versions of this talk}
+\end{scriptsize}
+\end{center}
+\end{frame}
+
+%\section{References}
+\begin{frame}[allowframebreaks, plain]
+\textcolor{white}{"}\\[.5cm]
+\bibliographystyle{chicago}
+\begin{tiny}
+\bibliography{D:/BibTex/Bibliography}
+\end{tiny} 
+\end{frame}
+
+\begin{frame}[plain]
+\titlepage 
+\end{frame}
+
+\end{document}
